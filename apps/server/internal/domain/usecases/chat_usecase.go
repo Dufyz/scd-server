@@ -8,11 +8,13 @@ import (
 	"os"
 	"strconv"
 
+	kafkaProducer "github.com/Dufyz/scd-server/infra/kafka/producer"
 	redisInfra "github.com/Dufyz/scd-server/infra/redis"
 	"github.com/Dufyz/scd-server/internal/domain/entities"
 	"github.com/Dufyz/scd-server/internal/shared/dtos"
 	"github.com/Dufyz/scd-server/internal/shared/errors"
 	"github.com/Dufyz/scd-server/internal/shared/interfaces"
+	"go.uber.org/zap"
 )
 
 type ChatUsecase struct {
@@ -90,7 +92,13 @@ func (uc *ChatUsecase) Create(body dtos.CreateChat) (dtos.ChatResponse, error) {
 
 	_ = redisInfra.DelByPattern(context.Background(), "chats:list*")
 
-	return uc.buildResponse(chat), nil
+	resp := uc.buildResponse(chat)
+
+	if err := kafkaProducer.ProduceChatCreated(context.Background(), resp); err != nil {
+		zap.L().Error("failed to publish chat.created event", zap.Error(err))
+	}
+
+	return resp, nil
 }
 
 func (uc *ChatUsecase) Update(id int64, body dtos.UpdateChat) (dtos.ChatResponse, error) {
@@ -105,7 +113,12 @@ func (uc *ChatUsecase) Update(id int64, body dtos.UpdateChat) (dtos.ChatResponse
 
 	_ = redisInfra.DelByPattern(context.Background(), "chats:list*")
 
-	return uc.buildResponse(chat), nil
+	resp := uc.buildResponse(chat)
+	if err := kafkaProducer.ProduceChatUpdated(context.Background(), resp); err != nil {
+		zap.L().Error("failed to publish chat.updated event", zap.Error(err))
+	}
+
+	return resp, nil
 }
 
 func (uc *ChatUsecase) Delete(id int64) error {
@@ -115,6 +128,10 @@ func (uc *ChatUsecase) Delete(id int64) error {
 	}
 
 	_ = redisInfra.DelByPattern(context.Background(), "chats:list*")
+
+	if err := kafkaProducer.ProduceChatDeleted(context.Background(), id); err != nil {
+		zap.L().Error("failed to publish chat.deleted event", zap.Error(err))
+	}
 
 	return nil
 }

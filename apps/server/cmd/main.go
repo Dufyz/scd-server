@@ -54,7 +54,6 @@ func init() {
 		"REDIS_PORT",
 		"REDIS_URL",
 		"REDIS_TTL_SECONDS",
-		"WEB_URL",
 	}
 
 	for _, envVar := range requiredEnvVars {

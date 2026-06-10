@@ -7,11 +7,13 @@ import (
 	"os"
 	"strconv"
 
+	kafkaProducer "github.com/Dufyz/scd-server/infra/kafka/producer"
 	redisInfra "github.com/Dufyz/scd-server/infra/redis"
 	"github.com/Dufyz/scd-server/internal/domain/entities"
 	"github.com/Dufyz/scd-server/internal/shared/dtos"
 	"github.com/Dufyz/scd-server/internal/shared/errors"
 	"github.com/Dufyz/scd-server/internal/shared/interfaces"
+	"go.uber.org/zap"
 )
 
 type MessageUsecase struct {
@@ -82,7 +84,12 @@ func (uc *MessageUsecase) Create(body dtos.CreateMessage) (dtos.MessageResponse,
 
 	_ = redisInfra.DelByPattern(context.Background(), "messages:list*")
 
-	return uc.buildResponse(message), nil
+	resp := uc.buildResponse(message)
+	if err := kafkaProducer.ProduceMessageCreated(context.Background(), resp); err != nil {
+		zap.L().Error("failed to publish message.created event", zap.Error(err))
+	}
+
+	return resp, nil
 }
 
 func (uc *MessageUsecase) Update(id int64, body dtos.UpdateMessage) (dtos.MessageResponse, error) {
@@ -97,7 +104,12 @@ func (uc *MessageUsecase) Update(id int64, body dtos.UpdateMessage) (dtos.Messag
 
 	_ = redisInfra.DelByPattern(context.Background(), "messages:list*")
 
-	return uc.buildResponse(message), nil
+	resp := uc.buildResponse(message)
+	if err := kafkaProducer.ProduceMessageUpdated(context.Background(), resp); err != nil {
+		zap.L().Error("failed to publish message.updated event", zap.Error(err))
+	}
+
+	return resp, nil
 }
 
 func (uc *MessageUsecase) Delete(id int64) error {
@@ -107,6 +119,10 @@ func (uc *MessageUsecase) Delete(id int64) error {
 	}
 
 	_ = redisInfra.DelByPattern(context.Background(), "messages:list*")
+
+	if err := kafkaProducer.ProduceMessageDeleted(context.Background(), id); err != nil {
+		zap.L().Error("failed to publish message.deleted event", zap.Error(err))
+	}
 
 	return nil
 }
