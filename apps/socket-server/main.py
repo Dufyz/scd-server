@@ -1,6 +1,8 @@
 import asyncio
 import os
 import websockets
+import sys
+sys.stdout.reconfigure(line_buffering=True)
 from dotenv import load_dotenv
 from room_manager import remove_client
 from event_handler import handle_event

@@ -3,4 +3,4 @@ variables:
   - name: api_url
     value: http://localhost:3000/api
   - name: socket_url
-    value: http://localhost:3000/api
+    value: ws://localhost:8765

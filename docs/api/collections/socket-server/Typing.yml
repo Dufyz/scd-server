@@ -1,0 +1,35 @@
+info:
+  name: Typing
+  type: http
+  seq: 4
+
+docs: |-
+  Indicador de digitação em uma sala.
+  
+  Enviar via WebSocket:
+```json
+  {
+    "type": "typing",
+    "room_id": 1,
+    "user_name": "Gustavo",
+    "typing": true
+  }
+```
+  
+  Para parar:
+```json
+  {
+    "type": "typing",
+    "room_id": 1,
+    "user_name": "Gustavo",
+    "typing": false
+  }
+```
+
+http:
+  method: GET
+  url: "{{socket_url}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
