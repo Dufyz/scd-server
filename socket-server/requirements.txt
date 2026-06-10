@@ -1,0 +1,4 @@
+websockets
+redis[hiredis]
+confluent-kafka
+python-dotenv
