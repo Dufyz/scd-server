@@ -1,0 +1,23 @@
+info:
+  name: Join Room
+  type: http
+  seq: 2
+
+docs: |-
+  Conectar via WebSocket e entrar em uma sala.
+  
+  Enviar após conectar:
+```json
+  {
+    "type": "join_room",
+    "room_id": 1
+  }
+```
+
+http:
+  method: GET
+  url: "{{socket_url}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0

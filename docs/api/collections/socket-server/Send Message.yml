@@ -1,0 +1,35 @@
+info:
+  name: Send Message
+  type: http
+  seq: 3
+
+docs: |-
+  Enviar mensagem para uma sala.
+  
+  Enviar via WebSocket:
+```json
+  {
+    "type": "send_message",
+    "room_id": 1,
+    "message": "oi galera",
+    "user_name": "Gustavo"
+  }
+```
+  
+  Resposta recebida por todos na sala:
+```json
+  {
+    "type": "send_message",
+    "room_id": "1",
+    "message": "oi galera",
+    "user_name": "Gustavo"
+  }
+```
+
+http:
+  method: GET
+  url: "{{socket_url}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
