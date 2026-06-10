@@ -1,0 +1,8 @@
+CREATE TABLE messages (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    chat_id BIGINT REFERENCES chats(id) NOT NULL,
+    message TEXT NOT NULL,
+    user_name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
