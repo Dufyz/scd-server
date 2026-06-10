@@ -1,8 +1,14 @@
 package usecases
 
 import (
+	"context"
 	"database/sql"
+	"encoding/json"
+	"fmt"
+	"os"
+	"strconv"
 
+	redisInfra "github.com/Dufyz/scd-server/infra/redis"
 	"github.com/Dufyz/scd-server/internal/domain/entities"
 	"github.com/Dufyz/scd-server/internal/shared/dtos"
 	"github.com/Dufyz/scd-server/internal/shared/errors"
@@ -32,6 +38,26 @@ func (uc *ChatUsecase) buildResponse(chat entities.Chat) dtos.ChatResponse {
 }
 
 func (uc *ChatUsecase) List(filters dtos.ChatFilters) ([]dtos.ChatResponse, error) {
+	ctx := context.Background()
+	name := ""
+	category := ""
+	if filters.Name != nil {
+		name = *filters.Name
+	}
+	if filters.Category != nil {
+		category = *filters.Category
+	}
+
+	key := fmt.Sprintf("chats:list:name=%s:category=%s", name, category)
+	if exists, _ := redisInfra.Exists(ctx, key); exists {
+		if cached, err := redisInfra.Get(ctx, key); err == nil && cached != "" {
+			var cachedResp []dtos.ChatResponse
+			if err := json.Unmarshal([]byte(cached), &cachedResp); err == nil {
+				return cachedResp, nil
+			}
+		}
+	}
+
 	chats, err := uc.repository.List(filters)
 	if err != nil {
 		return nil, err
@@ -42,6 +68,17 @@ func (uc *ChatUsecase) List(filters dtos.ChatFilters) ([]dtos.ChatResponse, erro
 		responses = append(responses, uc.buildResponse(chat))
 	}
 
+	ttl := 60
+	if v := os.Getenv("REDIS_TTL_SECONDS"); v != "" {
+		if parsed, err := strconv.Atoi(v); err == nil {
+			ttl = parsed
+		}
+	}
+
+	if b, err := json.Marshal(responses); err == nil {
+		_ = redisInfra.Set(ctx, key, string(b), ttl)
+	}
+
 	return responses, nil
 }
 
@@ -50,6 +87,8 @@ func (uc *ChatUsecase) Create(body dtos.CreateChat) (dtos.ChatResponse, error) {
 	if err != nil {
 		return dtos.ChatResponse{}, err
 	}
+
+	_ = redisInfra.DelByPattern(context.Background(), "chats:list*")
 
 	return uc.buildResponse(chat), nil
 }
@@ -64,6 +103,8 @@ func (uc *ChatUsecase) Update(id int64, body dtos.UpdateChat) (dtos.ChatResponse
 		return dtos.ChatResponse{}, err
 	}
 
+	_ = redisInfra.DelByPattern(context.Background(), "chats:list*")
+
 	return uc.buildResponse(chat), nil
 }
 
@@ -72,6 +113,8 @@ func (uc *ChatUsecase) Delete(id int64) error {
 	if err != nil {
 		return err
 	}
+
+	_ = redisInfra.DelByPattern(context.Background(), "chats:list*")
 
 	return nil
 }

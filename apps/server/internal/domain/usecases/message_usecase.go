@@ -1,8 +1,13 @@
 package usecases
 
 import (
+	"context"
 	"database/sql"
+	"encoding/json"
+	"os"
+	"strconv"
 
+	redisInfra "github.com/Dufyz/scd-server/infra/redis"
 	"github.com/Dufyz/scd-server/internal/domain/entities"
 	"github.com/Dufyz/scd-server/internal/shared/dtos"
 	"github.com/Dufyz/scd-server/internal/shared/errors"
@@ -33,6 +38,18 @@ func (uc *MessageUsecase) buildResponse(message entities.Message) dtos.MessageRe
 }
 
 func (uc *MessageUsecase) ListByChatId(chatId int64) ([]dtos.MessageResponse, error) {
+	ctx := context.Background()
+	key := "messages:list:chat:" + strconv.FormatInt(chatId, 10)
+
+	if exists, _ := redisInfra.Exists(ctx, key); exists {
+		if cached, err := redisInfra.Get(ctx, key); err == nil && cached != "" {
+			var cachedResp []dtos.MessageResponse
+			if err := json.Unmarshal([]byte(cached), &cachedResp); err == nil {
+				return cachedResp, nil
+			}
+		}
+	}
+
 	messages, err := uc.repository.ListByChatId(chatId)
 	if err != nil {
 		return nil, err
@@ -43,6 +60,17 @@ func (uc *MessageUsecase) ListByChatId(chatId int64) ([]dtos.MessageResponse, er
 		responses = append(responses, uc.buildResponse(message))
 	}
 
+	ttl := 60
+	if v := os.Getenv("REDIS_TTL_SECONDS"); v != "" {
+		if parsed, err := strconv.Atoi(v); err == nil {
+			ttl = parsed
+		}
+	}
+
+	if b, err := json.Marshal(responses); err == nil {
+		_ = redisInfra.Set(ctx, key, string(b), ttl)
+	}
+
 	return responses, nil
 }
 
@@ -51,6 +79,8 @@ func (uc *MessageUsecase) Create(body dtos.CreateMessage) (dtos.MessageResponse,
 	if err != nil {
 		return dtos.MessageResponse{}, err
 	}
+
+	_ = redisInfra.DelByPattern(context.Background(), "messages:list*")
 
 	return uc.buildResponse(message), nil
 }
@@ -65,6 +95,8 @@ func (uc *MessageUsecase) Update(id int64, body dtos.UpdateMessage) (dtos.Messag
 		return dtos.MessageResponse{}, err
 	}
 
+	_ = redisInfra.DelByPattern(context.Background(), "messages:list*")
+
 	return uc.buildResponse(message), nil
 }
 
@@ -73,6 +105,8 @@ func (uc *MessageUsecase) Delete(id int64) error {
 	if err != nil {
 		return err
 	}
+
+	_ = redisInfra.DelByPattern(context.Background(), "messages:list*")
 
 	return nil
 }

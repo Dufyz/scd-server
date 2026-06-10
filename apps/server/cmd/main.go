@@ -53,7 +53,7 @@ func init() {
 		"DATABASE_URL",
 		"REDIS_PORT",
 		"REDIS_URL",
-		"REDIS_MONITOR_PORT",
+		"REDIS_TTL_SECONDS",
 		"WEB_URL",
 	}
 

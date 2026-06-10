@@ -68,7 +68,7 @@ services:
       # Redis
       - REDIS_PORT=${REDIS_PORT:-6379}
       - REDIS_URL=${REDIS_URL:-server-redis:6379}
-      - REDIS_MONITOR_PORT=${REDIS_MONITOR_PORT:-8081}
+      - REDIS_TTL_SECONDS=${REDIS_TTL_SECONDS:-3600}
 
       # Kafka
       - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
@@ -123,18 +123,6 @@ services:
     command: redis-server --appendonly yes
     ports:
       - "${REDIS_PORT:-6379}:6379"
-
-  server-redis-monitor:
-    image: hibiken/asynqmon
-    platform: linux/amd64
-    ports:
-      - "${REDIS_MONITOR_PORT:-8081}:8080"
-    restart: unless-stopped
-    networks:
-      - app-network
-    command: --redis-addr=server-redis:6379
-    depends_on:
-      - server-redis
 
 networks:
   app-network:
