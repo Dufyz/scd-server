@@ -1,0 +1,14 @@
+opencollection: 1.0.0
+info:
+  name: "api"
+  type: workspace
+
+collections:
+  - name: "server"
+    path: "collections/server"
+  - name: "socket-server"
+    path: "collections/socket-server"
+
+specs:
+
+docs: ""

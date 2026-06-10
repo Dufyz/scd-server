@@ -1,0 +1,6 @@
+name: localhost
+variables:
+  - name: api_url
+    value: http://localhost:3000/api
+  - name: socket_url
+    value: http://localhost:3000/api

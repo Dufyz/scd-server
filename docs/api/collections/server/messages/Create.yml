@@ -1,0 +1,23 @@
+info:
+  name: Create
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{api_url}}/messages"
+  body:
+    type: json
+    data: |-
+      {
+        "chat_id": 1,
+        "message": "Hello World",
+        "user_name": "Guilherme Schmidt"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
