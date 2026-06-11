@@ -5,12 +5,16 @@ info:
 
 http:
   method: PUT
-  url: "{{api_url}}/chats"
+  url: "{{api_url}}/chats/:id"
+  params:
+    - name: id
+      value: "1"
+      type: path
   body:
     type: json
     data: |-
       {
-        "name": "SOFTWARE CONCORRENTE E DISTRIBUÍDO - 2026/1 (BES)",
+        "name": "SOFTWARE CONCORRENTE E DISTRIBUÍDO - 2026/1 (BES)!",
         "category": "INF/UFG"
       }
   auth: inherit

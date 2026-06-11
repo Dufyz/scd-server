@@ -28,23 +28,22 @@ func NewChatController(
 }
 
 func (c *chatController) GETChats(ctx echo.Context) error {
-	name, errorMessage := utils.GetStringQueryParam(ctx, "name")
-	if errorMessage != "" {
-		return ctx.JSON(http.StatusBadRequest, log.Response{
-			Message: errorMessage,
-		})
+	nameParam := ctx.QueryParam("name")
+	categoryParam := ctx.QueryParam("category")
+
+	var name *string
+	if nameParam != "" {
+		name = &nameParam
 	}
 
-	category, errorMessage := utils.GetStringQueryParam(ctx, "category")
-	if errorMessage != "" {
-		return ctx.JSON(http.StatusBadRequest, log.Response{
-			Message: errorMessage,
-		})
+	var category *string
+	if categoryParam != "" {
+		category = &categoryParam
 	}
 
 	chats, err := c.usecase.List(dtos.ChatFilters{
-		Name:     &name,
-		Category: &category,
+		Name:     name,
+		Category: category,
 	})
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, log.Response{

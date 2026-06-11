@@ -79,6 +79,10 @@ func (uc *MessageUsecase) ListByChatId(chatId int64) ([]dtos.MessageResponse, er
 func (uc *MessageUsecase) Create(body dtos.CreateMessage) (dtos.MessageResponse, error) {
 	message, err := uc.repository.Create(body)
 	if err != nil {
+		if err.Error() == "pq: insert or update on table \"messages\" violates foreign key constraint \"messages_chat_id_fkey\"" {
+			return dtos.MessageResponse{}, errors.ErrMessageFKChatId
+		}
+
 		return dtos.MessageResponse{}, err
 	}
 

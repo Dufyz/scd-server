@@ -42,7 +42,7 @@ func (uc *messageController) POSTMessage(ctx echo.Context) error {
 
 	message, err := uc.usecase.Create(body)
 	if err != nil {
-		if err == errors.ErrChatNotFound {
+		if err == errors.ErrMessageFKChatId {
 			return ctx.JSON(http.StatusBadRequest, log.Response{
 				Message: err.Error(),
 			})

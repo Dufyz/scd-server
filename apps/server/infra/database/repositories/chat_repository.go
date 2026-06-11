@@ -57,18 +57,17 @@ func (r *ChatRepository) List(filters dtos.ChatFilters) ([]entities.Chat, error)
 	args := []interface{}{}
 	argPos := 1
 
-	if filters.Name != nil {
-		query += fmt.Sprintf(" AND unaccent(LOWER(name)) ILIKE unaccent(LOWER($%d))", argPos)
-		args = append(args, "%"+*filters.Name+"%")
+	if filters.Name != nil && *filters.Name != "" {
+		query += fmt.Sprintf(" AND unaccent(LOWER(name)) ILIKE '%%' || unaccent(LOWER($%d)) || '%%'", argPos)
+		args = append(args, *filters.Name)
 		argPos++
 	}
 
-	if filters.Category != nil {
-		query += fmt.Sprintf(" AND category = $%d", argPos)
-		args = append(args, filters.Category)
+	if filters.Category != nil && *filters.Category != "" {
+		query += fmt.Sprintf(" AND unaccent(LOWER(category)) ILIKE '%%' || unaccent(LOWER($%d)) || '%%'", argPos)
+		args = append(args, *filters.Category)
 		argPos++
 	}
-
 	query += " ORDER BY created_at DESC"
 
 	rows, err := r.connection.Query(query, args...)

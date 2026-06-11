@@ -8,13 +8,13 @@ http:
   url: "{{api_url}}/messages/:id"
   params:
     - name: id
-      value: ""
+      value: "4"
       type: path
   body:
     type: json
     data: |-
       {
-        "message": "Hello World"
+        "message": "Hello World!"
       }
   auth: inherit
 

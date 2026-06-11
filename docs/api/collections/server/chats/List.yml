@@ -5,13 +5,13 @@ info:
 
 http:
   method: GET
-  url: "{{api_url}}/chats?name=&category="
+  url: "{{api_url}}/chats?name=SOFTWARE CONCORRENTE E DISTRIBUÍDO - 2026/1 (BES)&category=INF/UFG"
   params:
     - name: name
-      value: ""
+      value: SOFTWARE CONCORRENTE E DISTRIBUÍDO - 2026/1 (BES)
       type: query
     - name: category
-      value: ""
+      value: INF/UFG
       type: query
   auth: inherit
 

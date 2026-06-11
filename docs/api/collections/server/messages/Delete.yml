@@ -8,7 +8,7 @@ http:
   url: "{{api_url}}/messages/:id"
   params:
     - name: id
-      value: ""
+      value: "1"
       type: path
   auth: inherit
 

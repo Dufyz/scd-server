@@ -5,7 +5,11 @@ info:
 
 http:
   method: DELETE
-  url: "{{api_url}}/chats"
+  url: "{{api_url}}/chats/:id"
+  params:
+    - name: id
+      value: "3"
+      type: path
   auth: inherit
 
 settings:
