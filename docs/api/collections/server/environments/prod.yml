@@ -1,6 +1,6 @@
 name: prod
 variables:
   - name: api_url
-    value: http://18.233.166.240:3000/api
+    value: http://56.125.106.244:3000/api
   - name: socket_url
-    value: ws://52.87.190.221:8765
+    value: ws://54.20.70.153:8765

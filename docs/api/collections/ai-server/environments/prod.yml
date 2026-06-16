@@ -1,4 +1,4 @@
 name: prod
 variables:
   - name: api_url
-    value: http://34.227.161.126:8080
+    value: http://15.228.124.107:8080
