@@ -1,4 +1,4 @@
-websockets
+websockets==12.0
 redis[hiredis]
 confluent-kafka
 python-dotenv

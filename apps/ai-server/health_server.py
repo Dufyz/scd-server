@@ -15,17 +15,8 @@ app = FastAPI(title="AI Server - Language Detection")
 async def health_check():
     """Health check endpoint"""
     return {
-        "status": "healthy",
-        "service": "ai-server-language-detection"
-    }
-
-
-@app.get("/")
-async def root():
-    """Root endpoint"""
-    return {
-        "service": "AI Server - Language Detection",
-        "version": "1.0.0"
+        "message": "Health status endpoint is operational",
+        "status": "up"
     }
 
 

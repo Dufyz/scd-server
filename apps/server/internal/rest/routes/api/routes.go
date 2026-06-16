@@ -9,5 +9,5 @@ import (
 func SetupApiRoutes(api *echo.Group, conn *db.ReplicatedDB, queueClient *asynq.Client) {
 	ChatRoutes(api, conn)
 	MessageRoutes(api, conn)
-	HealthRoutes(api, conn.Write)
+	HealthRoutes(api)
 }
