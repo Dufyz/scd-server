@@ -1,8 +1,0 @@
-aws_region  = "us-east-1"
-db_password = "troque-por-uma-senha-forte"
-
-# IP público da EC2 "server" na conta AWS Academy (única que acessa o Postgres).
-# Atualize a cada sessão de lab, já que o IP muda quando as instâncias são recriadas.
-allowed_cidr_blocks = [
-  "3.91.10.20/32", # server-api
-]

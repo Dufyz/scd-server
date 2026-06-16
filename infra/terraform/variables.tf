@@ -1,11 +1,11 @@
 variable "aws_region" {
-  description = "Região AWS onde o RDS será criado"
+  description = "Região AWS onde tudo será criado"
   type        = string
   default     = "sa-east-1"
 }
 
 variable "aws_profile" {
-  description = "Profile do ~/.aws/credentials com as credenciais da sua conta pessoal AWS"
+  description = "Profile do ~/.aws/credentials com as credenciais da sua conta AWS"
   type        = string
   default     = "personal"
 }
@@ -14,6 +14,35 @@ variable "project_name" {
   description = "Prefixo usado no nome dos recursos"
   type        = string
   default     = "scd"
+}
+
+variable "instance_type" {
+  description = "Tipo de instância EC2 (free tier)"
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "admin_cidr" {
+  description = "CIDR (seu IP, ex: \"200.10.20.30/32\") autorizado a conectar via SSH, no painel do Kafka UI e direto no RDS (ex: DBeaver)"
+  type        = string
+}
+
+variable "repo_url" {
+  description = "URL do repositório git (usado pelo user_data para clonar infra/kafka e infra/redis)"
+  type        = string
+  default     = "https://github.com/Dufyz/scd-server.git"
+}
+
+variable "repo_branch" {
+  description = "Branch que o user_data deve clonar"
+  type        = string
+  default     = "main"
+}
+
+variable "root_volume_size_gb" {
+  description = "Tamanho do volume raiz (EBS) de cada EC2, em GB"
+  type        = number
+  default     = 8
 }
 
 variable "db_name" {
@@ -50,12 +79,4 @@ variable "db_replica_instance_class" {
   description = "Classe da instância RDS da read replica"
   type        = string
   default     = "db.t3.micro"
-}
-
-# IPs públicos das EC2 da conta AWS Academy que podem acessar o RDS.
-# Como a sessão da Academy é temporária, esses IPs mudam a cada novo lab —
-# atualize esta lista e rode `terraform apply` de novo quando isso acontecer.
-variable "allowed_cidr_blocks" {
-  description = "Lista de CIDRs (ex: \"3.91.10.20/32\") autorizados a conectar no RDS"
-  type        = list(string)
 }

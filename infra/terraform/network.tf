@@ -7,6 +7,7 @@ data "aws_subnets" "default" {
     name   = "vpc-id"
     values = [data.aws_vpc.default.id]
   }
+
 }
 
 data "aws_ami" "amazon_linux" {
@@ -19,8 +20,6 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-# Par de chaves gerado pelo Terraform — a chave privada é exposta no output
-# `ssh_private_key_pem` (sensitive) para você salvar e usar no GitHub Actions.
 resource "tls_private_key" "deploy" {
   algorithm = "RSA"
   rsa_bits  = 4096
@@ -168,5 +167,38 @@ resource "aws_security_group" "app_socket_server" {
 
   tags = {
     Name = "${var.project_name}-app-socket-server-sg"
+  }
+}
+
+resource "aws_security_group" "rds" {
+  name        = "${var.project_name}-rds-sg"
+  description = "Allows access to the RDS Postgres instance"
+  vpc_id      = data.aws_vpc.default.id
+
+  ingress {
+    description     = "Postgres from the server EC2"
+    from_port        = 5432
+    to_port          = 5432
+    protocol         = "tcp"
+    security_groups  = [aws_security_group.app_server.id]
+  }
+
+  ingress {
+    description = "Postgres from your local IP (DBeaver, TablePlus, etc)"
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = [var.admin_cidr]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.project_name}-rds-sg"
   }
 }
