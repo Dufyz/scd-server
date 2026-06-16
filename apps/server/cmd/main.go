@@ -47,9 +47,9 @@ func init() {
 		"PORT",
 		"DATABASE_URL",
 		"DATABASE_URL_REPLICA",
-		"REDIS_PORT",
 		"REDIS_URL",
 		"REDIS_TTL_SECONDS",
+		"KAFKA_BROKERS",
 	}
 
 	for _, envVar := range requiredEnvVars {
