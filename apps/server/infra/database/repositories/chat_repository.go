@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	db "github.com/Dufyz/scd-server/infra/database"
 	"github.com/Dufyz/scd-server/internal/domain/entities"
 	"github.com/Dufyz/scd-server/internal/shared/dtos"
 	"github.com/Dufyz/scd-server/internal/shared/interfaces"
@@ -13,10 +14,10 @@ import (
 var _ interfaces.ChatRepositoryInterface = &ChatRepository{}
 
 type ChatRepository struct {
-	connection *sql.DB
+	connection *db.ReplicatedDB
 }
 
-func NewChatRepository(connection *sql.DB) interfaces.ChatRepositoryInterface {
+func NewChatRepository(connection *db.ReplicatedDB) interfaces.ChatRepositoryInterface {
 	return &ChatRepository{
 		connection: connection,
 	}

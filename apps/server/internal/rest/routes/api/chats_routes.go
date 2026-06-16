@@ -1,17 +1,16 @@
 package api_routes
 
 import (
-	"database/sql"
-
+	db "github.com/Dufyz/scd-server/infra/database"
 	"github.com/Dufyz/scd-server/infra/database/repositories"
 	"github.com/Dufyz/scd-server/internal/domain/usecases"
 	"github.com/Dufyz/scd-server/internal/rest/controllers"
 	"github.com/labstack/echo/v4"
 )
 
-func ChatRoutes(api *echo.Group, db *sql.DB) {
-	chatRepository := repositories.NewChatRepository(db)
-	messageRepository := repositories.NewMessageRepository(db)
+func ChatRoutes(api *echo.Group, conn *db.ReplicatedDB) {
+	chatRepository := repositories.NewChatRepository(conn)
+	messageRepository := repositories.NewMessageRepository(conn)
 
 	chatUsecase := usecases.NewChatUsecase(chatRepository)
 	messageUsecase := usecases.NewMessageUsecase(messageRepository)

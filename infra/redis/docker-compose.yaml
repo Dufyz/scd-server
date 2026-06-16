@@ -1,9 +1,7 @@
 name: redis-infra
 
-# NOTE: Este docker-compose é opcional para desenvolvimento local.
-# Em produção na AWS, use ElastiCache configurado via variáveis de ambiente:
-# - REDIS_URL: endpoint do ElastiCache (ex: meu-cluster.cache.amazonaws.com:6379)
-# - REDIS_PASSWORD: senha se auth-token estiver habilitado no ElastiCache
+# Este compose na EC2 de produção dedicada ao Redis.
+# Em produção, os outros serviços apontam REDIS_URL para o IP privado desta EC2
 
 services:
   redis:

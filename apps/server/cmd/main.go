@@ -45,12 +45,8 @@ func init() {
 	requiredEnvVars := []string{
 		"GO_ENV",
 		"PORT",
-		"POSTGRES_DB",
-		"POSTGRES_USER",
-		"POSTGRES_PASSWORD",
-		"POSTGRES_HOST",
-		"POSTGRES_PORT",
 		"DATABASE_URL",
+		"DATABASE_URL_REPLICA",
 		"REDIS_PORT",
 		"REDIS_URL",
 		"REDIS_TTL_SECONDS",
@@ -75,6 +71,16 @@ func main() {
 
 	defer connection.Close()
 
+	replicaConnection, err := db.NewReplicaDBConnectionWithRetries(20)
+	if err != nil {
+		logger.Fatal("Could not connect to database replica", zap.Error(err))
+	}
+	if replicaConnection != connection {
+		defer replicaConnection.Close()
+	}
+
+	replicatedDB := db.NewReplicatedDB(connection, replicaConnection)
+
 	redisQueueAddr := env.GetString("REDIS_URL", "server-redis:6379")
 
 	go func() {
@@ -84,7 +90,9 @@ func main() {
 		}
 	}()
 
-	queueClient := asynq.NewClient(asynq.RedisClientOpt{Addr: redisQueueAddr})
+	queueClient := asynq.NewClient(asynq.RedisClientOpt{
+		Addr: redisQueueAddr,
+	})
 	defer queueClient.Close()
 
 	e := echo.New()
@@ -105,7 +113,7 @@ func main() {
 	}))
 	e.Use(middlewares.LoggerMiddleware(logger))
 
-	routes.SetupRoutes(e, connection, queueClient)
+	routes.SetupRoutes(e, replicatedDB, queueClient)
 
 	port := env.GetInt("PORT", 3000)
 

@@ -59,12 +59,8 @@ services:
       - GO_ENV=${GO_ENV:-development}
 
       # Database
-      - POSTGRES_DB=${POSTGRES_DB:-postgres}
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-      - POSTGRES_HOST=${POSTGRES_HOST:-server-db}
-      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
-      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@${POSTGRES_HOST:-server-db}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-postgres}?sslmode=disable}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@server-db:5432/postgres?sslmode=disable}
+      - DATABASE_URL_REPLICA=${DATABASE_URL_REPLICA:-postgresql://postgres:postgres@server-db:5432/postgres?sslmode=disable}
 
       # Redis
       - REDIS_PORT=${REDIS_PORT:-6379}
@@ -161,7 +157,7 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
 
-      # Redis (ElastiCache endpoint)
+      # Redis (IP privado da EC2 do Redis em produção)
       - REDIS_URL=${REDIS_URL:-redis://server-redis:6379}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
     depends_on:

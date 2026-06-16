@@ -3,6 +3,7 @@ package repositories
 import (
 	"database/sql"
 
+	db "github.com/Dufyz/scd-server/infra/database"
 	"github.com/Dufyz/scd-server/internal/domain/entities"
 	"github.com/Dufyz/scd-server/internal/shared/dtos"
 	"github.com/Dufyz/scd-server/internal/shared/interfaces"
@@ -12,10 +13,10 @@ import (
 var _ interfaces.MessageRepositoryInterface = &MessageRepository{}
 
 type MessageRepository struct {
-	connection *sql.DB
+	connection *db.ReplicatedDB
 }
 
-func NewMessageRepository(connection *sql.DB) interfaces.MessageRepositoryInterface {
+func NewMessageRepository(connection *db.ReplicatedDB) interfaces.MessageRepositoryInterface {
 	return &MessageRepository{
 		connection: connection,
 	}

@@ -14,7 +14,21 @@ import (
 
 func NewDBConnection() (*sql.DB, error) {
 	url := env.GetString("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable")
+	return newDBConnection(url)
+}
 
+func NewDBConnectionWithRetries(maxRetries int) (*sql.DB, error) {
+	url := env.GetString("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable")
+	return newDBConnectionWithRetries(url, maxRetries)
+}
+
+func NewReplicaDBConnectionWithRetries(maxRetries int) (*sql.DB, error) {
+	primaryURL := env.GetString("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable")
+	url := env.GetString("DATABASE_URL_REPLICA", primaryURL)
+	return newDBConnectionWithRetries(url, maxRetries)
+}
+
+func newDBConnection(url string) (*sql.DB, error) {
 	db, err := sql.Open("postgres", url)
 	if err != nil {
 		return nil, err
@@ -36,14 +50,11 @@ func NewDBConnection() (*sql.DB, error) {
 	return db, nil
 }
 
-func NewDBConnectionWithRetries(maxRetries int) (*sql.DB, error) {
+func newDBConnectionWithRetries(url string, maxRetries int) (*sql.DB, error) {
 	var db *sql.DB
 	var err error
 
 	for i := range maxRetries {
-
-		url := env.GetString("DATABASE_URL", "postgres://postgres:postgres@localhost:54322/postgres?sslmode=disable")
-
 		fmt.Println("DATABASE_URL", url)
 
 		db, err = sql.Open("postgres", url)
