@@ -1,0 +1,7 @@
+# Environment
+.env
+.env.local
+
+# Backups
+*.tar.gz
+kafka-backup-*

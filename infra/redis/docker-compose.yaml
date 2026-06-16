@@ -1,0 +1,25 @@
+name: redis-infra
+
+# NOTE: Este docker-compose é opcional para desenvolvimento local.
+# Em produção na AWS, use ElastiCache configurado via variáveis de ambiente:
+# - REDIS_URL: endpoint do ElastiCache (ex: meu-cluster.cache.amazonaws.com:6379)
+# - REDIS_PASSWORD: senha se auth-token estiver habilitado no ElastiCache
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes ${REDIS_PASSWORD:+--requirepass ${REDIS_PASSWORD}}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  redis_data:
+    driver: local
