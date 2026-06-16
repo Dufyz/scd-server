@@ -1,0 +1,35 @@
+name: ai-server-infra
+
+services:
+  ai-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${AI_SERVER_PORT:-8080}:${AI_SERVER_PORT:-8080}"
+    environment:
+      # Server config
+      - AI_SERVER_PORT=${AI_SERVER_PORT:-8080}
+
+      # Kafka connection (IP privado da EC2 do Kafka)
+      - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
+      - KAFKA_CONSUMER_GROUP_ID=${KAFKA_CONSUMER_GROUP_ID:-ai-server-language-detection}
+
+      # Topics
+      - KAFKA_TOPIC_CONSUME=${KAFKA_TOPIC_CONSUME:-message.created}
+      - KAFKA_TOPIC_PRODUCE=${KAFKA_TOPIC_PRODUCE:-message.language-detected}
+
+      # OpenAI API
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
+
+      # Redis (ElastiCache endpoint)
+      - REDIS_URL=${REDIS_URL:-redis://localhost:6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:${AI_SERVER_PORT:-8080}/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
