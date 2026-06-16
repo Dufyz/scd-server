@@ -1,0 +1,6 @@
+name: localhost
+variables:
+  - name: socket_url
+    value: ws://localhost:8765
+  - name: api_url
+    value: http://localhost:8765

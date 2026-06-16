@@ -8,7 +8,7 @@ http:
   url: "{{api_url}}/chats/:id"
   params:
     - name: id
-      value: "3"
+      value: "2"
       type: path
   auth: inherit
 

@@ -8,7 +8,9 @@ collections:
     path: "collections/server"
   - name: "socket-server"
     path: "collections/socket-server"
+  - name: "ai-server"
+    path: "collections/ai-server"
 
 specs:
 
-docs: ""
+docs: ''
