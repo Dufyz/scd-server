@@ -1,0 +1,7 @@
+aws_region = "us-east-1"
+
+# Seu IP público atual, para liberar SSH e o painel do Kafka UI
+admin_cidr = "200.10.20.30/32"
+
+repo_url    = "https://github.com/Dufyz/scd-server.git"
+repo_branch = "main"
