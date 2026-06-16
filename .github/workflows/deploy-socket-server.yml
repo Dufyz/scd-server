@@ -1,0 +1,48 @@
+name: Deploy socket-server
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/socket-server/**"
+      - ".github/workflows/deploy-socket-server.yml"
+  workflow_dispatch: {}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: apps/socket-server
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/scd-socket-server:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/scd-socket-server:${{ github.sha }}
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SOCKET_SERVER_HOST }}
+          username: ec2-user
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/scd-socket-server:latest
+            docker stop scd-socket-server || true
+            docker rm scd-socket-server || true
+            docker run -d \
+              --name scd-socket-server \
+              --restart unless-stopped \
+              -p 8765:8765 \
+              -e PORT=8765 \
+              -e KAFKA_BROKERS='${{ secrets.KAFKA_BROKERS }}' \
+              ${{ secrets.DOCKERHUB_USERNAME }}/scd-socket-server:latest
