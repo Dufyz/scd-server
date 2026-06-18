@@ -1,0 +1,2 @@
+ALTER TABLE chats 
+ADD language VARCHAR(255) DEFAULT '';

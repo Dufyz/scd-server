@@ -35,6 +35,7 @@ func (r *MessageRepository) FindById(id int64) (*entities.Message, error) {
 		&message.UserName,
 		&message.CreatedAt,
 		&message.UpdatedAt,
+		&message.Language,
 	)
 
 	if err != nil {
@@ -70,6 +71,7 @@ func (r *MessageRepository) ListByChatId(chatId int64) ([]entities.Message, erro
 			&message.UserName,
 			&message.CreatedAt,
 			&message.UpdatedAt,
+			&message.Language,
 		)
 		if err != nil {
 			zap.L().Error("Error on scan row Message/Repository/ListByAgentId", zap.Error(err))
@@ -102,6 +104,7 @@ func (r *MessageRepository) Create(body dtos.CreateMessage) (entities.Message, e
 		&message.UserName,
 		&message.CreatedAt,
 		&message.UpdatedAt,
+		&message.Language,
 	)
 
 	if err != nil {
@@ -139,6 +142,7 @@ func (r *MessageRepository) Update(id int64, body dtos.UpdateMessage) (entities.
 		&message.UserName,
 		&message.CreatedAt,
 		&message.UpdatedAt,
+		&message.Language,
 	)
 
 	if err != nil {
