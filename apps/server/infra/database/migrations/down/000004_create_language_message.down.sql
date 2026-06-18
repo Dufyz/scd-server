@@ -1,2 +1,2 @@
-ALTER TABLE chats 
+ALTER TABLE messages
 DROP COLUMN language;
