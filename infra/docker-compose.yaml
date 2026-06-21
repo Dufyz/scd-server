@@ -57,6 +57,11 @@ services:
     environment:
       - PORT=${PORT:-3000}
       - GO_ENV=${GO_ENV:-development}
+      - POSTGRES_DB=${POSTGRES_DB:-postgres}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_HOST=${POSTGRES_HOST:-server-db}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
 
       # Database
       - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@server-db:5432/postgres?sslmode=disable}
