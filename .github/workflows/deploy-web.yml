@@ -1,0 +1,29 @@
+name: Deploy web
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/web/**"
+      - ".github/workflows/deploy-web.yml"
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: apps/web
+          vercel-args: "--prod"
+          # Variáveis de ambiente injetadas no build da Vercel
+          # Configure-as também no painel da Vercel em:
+          # Project Settings → Environment Variables
+          #   NEXT_PUBLIC_API_URL    = http://<SERVER_HOST>:3000/api
+          #   NEXT_PUBLIC_SOCKET_URL = ws://<SOCKET_HOST>:8765
