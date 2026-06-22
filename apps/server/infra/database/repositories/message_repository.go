@@ -25,7 +25,7 @@ func NewMessageRepository(connection *db.ReplicatedDB) interfaces.MessageReposit
 func (r *MessageRepository) FindById(id int64) (*entities.Message, error) {
 	var message entities.Message
 	err := r.connection.QueryRow(`
-		SELECT id, chat_id, message, user_name, created_at, updated_at
+		SELECT id, chat_id, message, user_name, created_at, updated_at, language
 		FROM "messages"
 		WHERE id = $1
 	`, id).Scan(
@@ -51,7 +51,7 @@ func (r *MessageRepository) FindById(id int64) (*entities.Message, error) {
 
 func (r *MessageRepository) ListByChatId(chatId int64) ([]entities.Message, error) {
 	rows, err := r.connection.Query(`
-		SELECT id, chat_id, message, user_name, created_at, updated_at
+		SELECT id, chat_id, message, user_name, created_at, updated_at, language
 		FROM "messages"
 		WHERE chat_id = $1
 	`, chatId)
@@ -96,7 +96,7 @@ func (r *MessageRepository) Create(body dtos.CreateMessage) (entities.Message, e
 	err = tx.QueryRow(`
 		INSERT INTO "messages" (chat_id, message, user_name)
 		VALUES ($1, $2, $3)
-		RETURNING id, chat_id, message, user_name, created_at, updated_at
+		RETURNING id, chat_id, message, user_name, created_at, updated_at, language
 	`, body.ChatID, body.Message, body.UserName).Scan(
 		&message.ID,
 		&message.ChatID,
@@ -134,7 +134,7 @@ func (r *MessageRepository) Update(id int64, body dtos.UpdateMessage) (entities.
 		UPDATE "messages"
 		SET message = $1, updated_at = NOW()
 		WHERE id = $2
-		RETURNING id, chat_id, message, user_name, created_at, updated_at
+		RETURNING id, chat_id, message, user_name, created_at, updated_at, language
 	`, body.Message, id).Scan(
 		&message.ID,
 		&message.ChatID,

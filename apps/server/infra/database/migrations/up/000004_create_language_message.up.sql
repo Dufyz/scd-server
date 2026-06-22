@@ -1,2 +1,2 @@
 ALTER TABLE messages
-ADD language VARCHAR(255) DEFAULT '';
+ADD language VARCHAR(255) DEFAULT NULL;

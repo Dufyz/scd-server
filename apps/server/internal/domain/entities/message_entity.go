@@ -9,5 +9,5 @@ type Message struct {
 	UserName  string    `json:"user_name"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	Language  string    `json:"language"`
+	Language  *string   `json:"language"`
 }
