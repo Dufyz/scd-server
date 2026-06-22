@@ -36,6 +36,7 @@ func (uc *MessageUsecase) buildResponse(message entities.Message) dtos.MessageRe
 		UserName:  message.UserName,
 		CreatedAt: message.CreatedAt,
 		UpdatedAt: message.UpdatedAt,
+		Language:  message.Language,
 	}
 }
 
