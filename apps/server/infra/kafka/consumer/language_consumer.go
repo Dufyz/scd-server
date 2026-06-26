@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/Dufyz/scd-server/internal/shared/interfaces"
+	kafkaProducer "github.com/Dufyz/scd-server/infra/kafka/producer"
 	redisInfra "github.com/Dufyz/scd-server/infra/redis"
+	"github.com/Dufyz/scd-server/internal/shared/dtos"
+	"github.com/Dufyz/scd-server/internal/shared/interfaces"
 	"github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
 )
@@ -86,6 +88,20 @@ func handleLanguageDetectedEvent(
 			zap.String("language", event.DetectedLanguage),
 		)
 		return err
+	}
+
+	// Publish language update event to Kafka so socket-server can broadcast to clients
+	lang := event.DetectedLanguage
+	if err := kafkaProducer.ProduceMessageLanguageUpdated(ctx, dtos.MessageResponse{
+		ID:       event.MessageID,
+		ChatID:   event.ChatID,
+		Language: &lang,
+	}); err != nil {
+		zap.L().Warn("Error publishing language update event to Kafka",
+			zap.Error(err),
+			zap.Int64("message_id", event.MessageID),
+		)
+		// Don't return error as this is not critical
 	}
 
 	// Invalidate cache for this chat's messages
