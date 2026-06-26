@@ -11,6 +11,9 @@ import (
 	_ "time/tzdata"
 
 	db "github.com/Dufyz/scd-server/infra/database"
+	"github.com/Dufyz/scd-server/infra/database/repositories"
+	kafkaInfra "github.com/Dufyz/scd-server/infra/kafka"
+	kafkaConsumer "github.com/Dufyz/scd-server/infra/kafka/consumer"
 	"github.com/Dufyz/scd-server/internal/env"
 	queue "github.com/Dufyz/scd-server/internal/queues"
 	"github.com/Dufyz/scd-server/internal/rest/middlewares"
@@ -94,6 +97,26 @@ func main() {
 		Addr: redisQueueAddr,
 	})
 	defer queueClient.Close()
+
+	// Start Kafka consumer for language detection
+	kafkaBrokers := kafkaInfra.BrokersFromEnv()
+	languageReader := kafkaInfra.NewReader(
+		kafkaBrokers,
+		"message.language-detected",
+		"server-api-language-consumer",
+	)
+	defer languageReader.Close()
+
+	messageRepo := repositories.NewMessageRepository(replicatedDB)
+	consumerCtx, cancelConsumer := context.WithCancel(context.Background())
+	defer cancelConsumer()
+
+	go func() {
+		logger.Info("Starting language detection consumer goroutine")
+		if err := kafkaConsumer.StartLanguageDetectionConsumer(consumerCtx, languageReader, messageRepo); err != nil {
+			logger.Error("Language detection consumer error", zap.Error(err))
+		}
+	}()
 
 	e := echo.New()
 

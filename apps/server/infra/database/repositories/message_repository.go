@@ -159,6 +159,31 @@ func (r *MessageRepository) Update(id int64, body dtos.UpdateMessage) (entities.
 	return message, nil
 }
 
+func (r *MessageRepository) UpdateLanguage(id int64, language string) error {
+	result, err := r.connection.Exec(`
+		UPDATE "messages"
+		SET language = $1, updated_at = NOW()
+		WHERE id = $2
+	`, language, id)
+
+	if err != nil {
+		zap.L().Error("Error on UPDATE language Message/Repository/UpdateLanguage", zap.Error(err))
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		zap.L().Error("Error getting rows affected Message/Repository/UpdateLanguage", zap.Error(err))
+		return err
+	}
+
+	if rowsAffected == 0 {
+		zap.L().Warn("No message updated with language", zap.Int64("id", id), zap.String("language", language))
+	}
+
+	return nil
+}
+
 func (r *MessageRepository) Delete(id int64) error {
 	result, err := r.connection.Exec(`DELETE FROM "messages" WHERE id = $1`, id)
 	if err != nil {
