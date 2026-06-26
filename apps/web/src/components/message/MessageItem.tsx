@@ -25,17 +25,28 @@ export function MessageItem({ message, currentUser }: MessageItemProps) {
           </p>
         )}
         <p className="text-sm leading-relaxed">{message.message}</p>
-        <p
+        <div
           suppressHydrationWarning
-          className={`mt-1 text-right text-[10px] ${
+          className={`mt-1 flex items-center justify-end gap-2 text-[10px] ${
             isOwn ? "text-indigo-200" : "text-gray-400"
           }`}
         >
-          {new Date(message.created_at).toLocaleTimeString("pt-BR", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </p>
+          {message.language && (
+            <span
+              className={`rounded px-1 py-0.5 font-medium uppercase tracking-wide ${
+                isOwn ? "bg-indigo-500 text-indigo-100" : "bg-gray-100 text-gray-500"
+              }`}
+            >
+              {message.language}
+            </span>
+          )}
+          <span>
+            {new Date(message.created_at).toLocaleTimeString("pt-BR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+        </div>
       </div>
     </div>
   );

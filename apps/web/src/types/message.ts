@@ -6,6 +6,7 @@ export interface MessageResponse {
   user_name: string;
   created_at: string;
   updated_at: string;
+  language: string | null;
 }
 
 // Espelha dtos.CreateMessage do apps/server
@@ -35,7 +36,14 @@ export interface WsTypingEvent {
   typing: boolean;
 }
 
-export type WsIncomingEvent = WsMessageEvent | WsTypingEvent;
+export interface WsMessageUpdateEvent {
+  type: "message_action_update";
+  room_id: string;
+  id: number;
+  language: string;
+}
+
+export type WsIncomingEvent = WsMessageEvent | WsTypingEvent | WsMessageUpdateEvent;
 
 // Eventos WebSocket enviados ao socket-server
 export interface WsJoinRoomPayload {
