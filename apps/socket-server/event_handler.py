@@ -1,5 +1,6 @@
 import json
 from room_manager import add_client, broadcast
+from redis_client import get_redis, INSTANCE_ID
 
 async def handle_event(websocket, raw_message):
     try:
@@ -37,13 +38,24 @@ async def handle_send_message(websocket, data):
     if not room_id or not message or not user_name:
         print("send_message com campos faltando, ignorando")
         return
+
     print(f"Mensagem de {user_name} na sala {room_id}: {message}")
-    await broadcast(room_id, {
+
+    event = {
         "type": "send_message",
         "room_id": room_id,
         "message": message,
-        "user_name": user_name
-    })
+        "user_name": user_name,
+    }
+
+    await broadcast(room_id, event)
+
+    redis = get_redis()
+    await redis.publish(f"room:{room_id}", json.dumps({
+        "instance_id": INSTANCE_ID,
+        "room_id": room_id,
+        "event": event,
+    }))
 
 async def handle_typing(websocket, data):
     room_id = str(data.get("room_id"))
@@ -57,5 +69,5 @@ async def handle_typing(websocket, data):
         "type": "typing",
         "room_id": room_id,
         "user_name": user_name,
-        "typing": typing
+        "typing": typing,
     }, exclude=websocket)
