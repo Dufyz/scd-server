@@ -50,12 +50,15 @@ async def handle_send_message(websocket, data):
 
     await broadcast(room_id, event)
 
-    redis = get_redis()
-    await redis.publish(f"room:{room_id}", json.dumps({
-        "instance_id": INSTANCE_ID,
-        "room_id": room_id,
-        "event": event,
-    }))
+    try:
+        redis = get_redis()
+        await redis.publish(f"room:{room_id}", json.dumps({
+            "instance_id": INSTANCE_ID,
+            "room_id": room_id,
+            "event": event,
+        }))
+    except Exception as e:
+        print(f"Redis publish erro (mensagem já entregue localmente): {e}")
 
 async def handle_typing(websocket, data):
     room_id = str(data.get("room_id"))
