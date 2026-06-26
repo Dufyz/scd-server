@@ -10,5 +10,6 @@ type MessageRepositoryInterface interface {
 	ListByChatId(chatId int64) ([]entities.Message, error)
 	Create(body dtos.CreateMessage) (entities.Message, error)
 	Update(id int64, body dtos.UpdateMessage) (entities.Message, error)
+	UpdateLanguage(id int64, language string) error
 	Delete(id int64) error
 }

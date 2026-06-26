@@ -142,8 +142,8 @@ resource "aws_security_group" "app_ai_server" {
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
-    from_port   = 8080
-    to_port     = 8080
+    from_port   = 8070
+    to_port     = 8070
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }

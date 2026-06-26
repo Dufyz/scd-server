@@ -1,4 +1,4 @@
 name: localhost
 variables:
   - name: api_url
-    value: http://localhost:8080
+    value: http://localhost:8070

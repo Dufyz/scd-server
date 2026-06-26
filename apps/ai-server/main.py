@@ -59,7 +59,7 @@ def main():
     signal.signal(signal.SIGTERM, signal_handler)
 
     # Start health check server in background thread
-    port = int(os.getenv("AI_SERVER_PORT", "8080"))
+    port = int(os.getenv("AI_SERVER_PORT", "8070"))
     health_thread = Thread(target=start_health_server, args=(port,), daemon=True)
     health_thread.start()
     logger.info(f"Health check server started on port {port}")
