@@ -22,6 +22,12 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
+variable "server_instance_count" {
+  description = "Number of server EC2 instances behind the ALB (min 2 for HA)"
+  type        = number
+  default     = 2
+}
+
 variable "admin_cidr" {
   description = "CIDR (seu IP, ex: \"200.10.20.30/32\") autorizado a conectar via SSH, no painel do Kafka UI e direto no RDS (ex: DBeaver)"
   type        = string

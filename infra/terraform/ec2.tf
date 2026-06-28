@@ -13,10 +13,12 @@ locals {
 }
 
 resource "aws_instance" "server" {
+  count = var.server_instance_count
+
   ami                    = data.aws_ami.amazon_linux.id
   instance_type          = var.instance_type
   key_name               = aws_key_pair.deploy.key_name
-  subnet_id              = data.aws_subnets.default.ids[0]
+  subnet_id              = data.aws_subnets.default.ids[count.index % length(data.aws_subnets.default.ids)]
   vpc_security_group_ids = [aws_security_group.ssh.id, aws_security_group.internal.id, aws_security_group.app_server.id]
   user_data              = local.app_bootstrap
 
@@ -25,7 +27,7 @@ resource "aws_instance" "server" {
   }
 
   tags = {
-    Name = "${var.project_name}-server"
+    Name = "${var.project_name}-server-${count.index}"
   }
 }
 

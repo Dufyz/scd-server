@@ -9,7 +9,7 @@ on:
   workflow_dispatch: {}
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,10 +29,39 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/scd-server:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/scd-server:${{ github.sha }}
 
-      - name: Deploy to EC2
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to server instance 0
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SERVER_HOST }}
+          host: ${{ secrets.SERVER_HOST_0 }}
+          username: ec2-user
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/scd-server:latest
+            docker stop scd-server || true
+            docker rm scd-server || true
+            docker run -d \
+              --name scd-server \
+              --restart unless-stopped \
+              -p 3000:3000 \
+              -e GO_ENV=production \
+              -e PORT=3000 \
+              -e DATABASE_URL='${{ secrets.DATABASE_URL }}' \
+              -e DATABASE_URL_REPLICA='${{ secrets.DATABASE_URL_REPLICA }}' \
+              -e REDIS_PORT=6379 \
+              -e REDIS_URL='${{ secrets.REDIS_URL }}' \
+              -e REDIS_PASSWORD='${{ secrets.REDIS_PASSWORD }}' \
+              -e REDIS_TTL_SECONDS=3600 \
+              -e KAFKA_BROKERS='${{ secrets.KAFKA_BROKERS }}' \
+              ${{ secrets.DOCKERHUB_USERNAME }}/scd-server:latest
+
+      - name: Deploy to server instance 1
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST_1 }}
           username: ec2-user
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |

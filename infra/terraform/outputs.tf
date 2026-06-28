@@ -1,5 +1,11 @@
-output "server_public_ip" {
-  value = aws_instance.server.public_ip
+output "server_public_ips" {
+  description = "Public IPs of all server instances (for SSH/deploy)"
+  value       = aws_instance.server[*].public_ip
+}
+
+output "alb_dns_name" {
+  description = "ALB DNS — use this as the public endpoint for the server API"
+  value       = aws_lb.server.dns_name
 }
 
 output "ai_server_public_ip" {

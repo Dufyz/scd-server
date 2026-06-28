@@ -119,20 +119,50 @@ resource "aws_security_group" "kafka_ui" {
   }
 }
 
-resource "aws_security_group" "app_server" {
-  name        = "${var.project_name}-app-server-sg"
-  description = "Public access to the server API"
+resource "aws_security_group" "alb" {
+  name        = "${var.project_name}-alb-sg"
+  description = "Public HTTP access to the ALB"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
-    from_port   = 3000
-    to_port     = 3000
+    description = "HTTP from anywhere"
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.project_name}-alb-sg"
+  }
+}
+
+resource "aws_security_group" "app_server" {
+  name_prefix = "${var.project_name}-app-server-sg-"
+  description = "Server API - only accessible from the ALB"
+  vpc_id      = data.aws_vpc.default.id
+
+  ingress {
+    description     = "Traffic from ALB"
+    from_port       = 3000
+    to_port         = 3000
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb.id]
+  }
+
   tags = {
     Name = "${var.project_name}-app-server-sg"
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
