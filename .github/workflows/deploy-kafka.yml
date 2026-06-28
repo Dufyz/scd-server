@@ -46,4 +46,6 @@ jobs:
             sudo docker compose down || true
             sudo docker compose up -d
 
-            echo "Kafka rodando em $PRIVATE_IP:9094"
+            sleep 5
+            sudo docker ps -a
+            sudo docker logs kafka-infra-kafka-1 --tail 20 || true
