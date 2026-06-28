@@ -15,9 +15,19 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           command_timeout: 10m
           script: |
-            sudo systemctl start docker 2>/dev/null || true
+            set -e
 
+            # Install Docker engine if not present (Amazon Linux 2023 or AL2)
+            if ! command -v docker > /dev/null 2>&1; then
+              echo "Docker not found, installing..."
+              sudo dnf install -y docker 2>/dev/null || sudo amazon-linux-extras install docker -y
+              sudo systemctl enable docker
+            fi
+            sudo systemctl start docker
+
+            # Install Docker Compose plugin if not present
             if ! sudo docker compose version > /dev/null 2>&1; then
+              echo "Docker Compose plugin not found, installing..."
               sudo mkdir -p /usr/local/lib/docker/cli-plugins
               sudo curl -sSL "https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-linux-x86_64" \
                 -o /usr/local/lib/docker/cli-plugins/docker-compose
@@ -26,6 +36,7 @@ jobs:
 
             IMDS_TOKEN=$(curl -sX PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
             PRIVATE_IP=$(curl -s -H "X-aws-ec2-metadata-token: $IMDS_TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4)
+            echo "Private IP: $PRIVATE_IP"
 
             if [ ! -d /opt/scd-server ]; then
               sudo git clone --depth 1 https://github.com/Dufyz/scd-server.git /opt/scd-server
@@ -37,5 +48,11 @@ jobs:
             sudo cp .env.example .env
             sudo sed -i "s/^KAFKA_EXTERNAL_HOST=.*/KAFKA_EXTERNAL_HOST=$PRIVATE_IP/" .env
 
-            sudo docker compose down 2>/dev/null || true
+            # Remove volumes to avoid stale Kafka state (CLUSTER_ID mismatch)
+            sudo docker compose down -v 2>/dev/null || true
             sudo docker compose up -d
+
+            echo "Waiting for Kafka to start..."
+            sleep 15
+            sudo docker compose ps
+            sudo docker compose logs kafka --tail 30
