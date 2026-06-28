@@ -92,10 +92,11 @@ func (uc *ChatUsecase) Create(body dtos.CreateChat) (dtos.ChatResponse, error) {
 	_ = redisInfra.DelByPattern(context.Background(), "chats:list*")
 
 	resp := uc.buildResponse(chat)
-
-	if err := kafkaProducer.ProduceChatCreated(context.Background(), resp); err != nil {
-		zap.L().Error("failed to publish chat.created event", zap.Error(err))
-	}
+	go func() {
+		if err := kafkaProducer.ProduceChatCreated(context.Background(), resp); err != nil {
+			zap.L().Error("failed to publish chat.created event", zap.Error(err))
+		}
+	}()
 
 	return resp, nil
 }
@@ -113,9 +114,11 @@ func (uc *ChatUsecase) Update(id int64, body dtos.UpdateChat) (dtos.ChatResponse
 	_ = redisInfra.DelByPattern(context.Background(), "chats:list*")
 
 	resp := uc.buildResponse(chat)
-	if err := kafkaProducer.ProduceChatUpdated(context.Background(), resp); err != nil {
-		zap.L().Error("failed to publish chat.updated event", zap.Error(err))
-	}
+	go func() {
+		if err := kafkaProducer.ProduceChatUpdated(context.Background(), resp); err != nil {
+			zap.L().Error("failed to publish chat.updated event", zap.Error(err))
+		}
+	}()
 
 	return resp, nil
 }
@@ -128,9 +131,11 @@ func (uc *ChatUsecase) Delete(id int64) error {
 
 	_ = redisInfra.DelByPattern(context.Background(), "chats:list*")
 
-	if err := kafkaProducer.ProduceChatDeleted(context.Background(), id); err != nil {
-		zap.L().Error("failed to publish chat.deleted event", zap.Error(err))
-	}
+	go func() {
+		if err := kafkaProducer.ProduceChatDeleted(context.Background(), id); err != nil {
+			zap.L().Error("failed to publish chat.deleted event", zap.Error(err))
+		}
+	}()
 
 	return nil
 }

@@ -89,9 +89,11 @@ func (uc *MessageUsecase) Create(body dtos.CreateMessage) (dtos.MessageResponse,
 	_ = redisInfra.DelByPattern(context.Background(), "messages:list*")
 
 	resp := uc.buildResponse(message)
-	if err := kafkaProducer.ProduceMessageCreated(context.Background(), resp); err != nil {
-		zap.L().Error("failed to publish message.created event", zap.Error(err))
-	}
+	go func() {
+		if err := kafkaProducer.ProduceMessageCreated(context.Background(), resp); err != nil {
+			zap.L().Error("failed to publish message.created event", zap.Error(err))
+		}
+	}()
 
 	return resp, nil
 }
@@ -109,9 +111,11 @@ func (uc *MessageUsecase) Update(id int64, body dtos.UpdateMessage) (dtos.Messag
 	_ = redisInfra.DelByPattern(context.Background(), "messages:list*")
 
 	resp := uc.buildResponse(message)
-	if err := kafkaProducer.ProduceMessageUpdated(context.Background(), resp); err != nil {
-		zap.L().Error("failed to publish message.updated event", zap.Error(err))
-	}
+	go func() {
+		if err := kafkaProducer.ProduceMessageUpdated(context.Background(), resp); err != nil {
+			zap.L().Error("failed to publish message.updated event", zap.Error(err))
+		}
+	}()
 
 	return resp, nil
 }
@@ -124,9 +128,11 @@ func (uc *MessageUsecase) Delete(id int64) error {
 
 	_ = redisInfra.DelByPattern(context.Background(), "messages:list*")
 
-	if err := kafkaProducer.ProduceMessageDeleted(context.Background(), id); err != nil {
-		zap.L().Error("failed to publish message.deleted event", zap.Error(err))
-	}
+	go func() {
+		if err := kafkaProducer.ProduceMessageDeleted(context.Background(), id); err != nil {
+			zap.L().Error("failed to publish message.deleted event", zap.Error(err))
+		}
+	}()
 
 	return nil
 }
