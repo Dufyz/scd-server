@@ -27,7 +27,7 @@ func (c *HealthController) GETKafkaHealth(ctx echo.Context) error {
 	reqCtx, cancel := context.WithTimeout(ctx.Request().Context(), 5*time.Second)
 	defer cancel()
 
-	err := kafkaInfra.Produce(reqCtx, brokers, "health-check", []byte("ping"), []byte("ping"))
+	err := kafkaInfra.Produce(reqCtx, brokers, "message", []byte("ping"), []byte("ping"))
 	if err != nil {
 		return ctx.JSON(http.StatusServiceUnavailable, map[string]string{
 			"status":  "down",
