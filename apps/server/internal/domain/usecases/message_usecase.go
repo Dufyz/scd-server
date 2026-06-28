@@ -86,7 +86,7 @@ func (uc *MessageUsecase) Create(body dtos.CreateMessage) (dtos.MessageResponse,
 		return dtos.MessageResponse{}, err
 	}
 
-	_ = redisInfra.DelByPattern(context.Background(), "messages:list*")
+	go redisInfra.DelByPattern(context.Background(), "messages:list*")
 
 	resp := uc.buildResponse(message)
 	go func() {
@@ -108,7 +108,7 @@ func (uc *MessageUsecase) Update(id int64, body dtos.UpdateMessage) (dtos.Messag
 		return dtos.MessageResponse{}, err
 	}
 
-	_ = redisInfra.DelByPattern(context.Background(), "messages:list*")
+	go redisInfra.DelByPattern(context.Background(), "messages:list*")
 
 	resp := uc.buildResponse(message)
 	go func() {
@@ -126,7 +126,7 @@ func (uc *MessageUsecase) Delete(id int64) error {
 		return err
 	}
 
-	_ = redisInfra.DelByPattern(context.Background(), "messages:list*")
+	go redisInfra.DelByPattern(context.Background(), "messages:list*")
 
 	go func() {
 		if err := kafkaProducer.ProduceMessageDeleted(context.Background(), id); err != nil {

@@ -64,10 +64,10 @@ func newDBConnectionWithRetries(url string, maxRetries int) (*sql.DB, error) {
 			continue
 		}
 
-		db.SetMaxOpenConns(10)                 // Maximum number of open connections (Supabase limit: 15)
-		db.SetMaxIdleConns(2)                  // Maximum number of idle connections
-		db.SetConnMaxLifetime(5 * time.Minute) // Maximum lifetime of a connection
-		db.SetConnMaxIdleTime(1 * time.Minute) // Maximum idle time before closing
+		db.SetMaxOpenConns(10)                  // Maximum number of open connections (Supabase limit: 15)
+		db.SetMaxIdleConns(10)                  // Keep all connections warm
+		db.SetConnMaxLifetime(30 * time.Minute) // Maximum lifetime of a connection
+		db.SetConnMaxIdleTime(10 * time.Minute) // Maximum idle time before closing
 
 		log.Printf("attempt %d: pinging database...", i+1)
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

@@ -89,7 +89,7 @@ func (uc *ChatUsecase) Create(body dtos.CreateChat) (dtos.ChatResponse, error) {
 		return dtos.ChatResponse{}, err
 	}
 
-	_ = redisInfra.DelByPattern(context.Background(), "chats:list*")
+	go redisInfra.DelByPattern(context.Background(), "chats:list*")
 
 	resp := uc.buildResponse(chat)
 	go func() {
@@ -111,7 +111,7 @@ func (uc *ChatUsecase) Update(id int64, body dtos.UpdateChat) (dtos.ChatResponse
 		return dtos.ChatResponse{}, err
 	}
 
-	_ = redisInfra.DelByPattern(context.Background(), "chats:list*")
+	go redisInfra.DelByPattern(context.Background(), "chats:list*")
 
 	resp := uc.buildResponse(chat)
 	go func() {
@@ -129,7 +129,7 @@ func (uc *ChatUsecase) Delete(id int64) error {
 		return err
 	}
 
-	_ = redisInfra.DelByPattern(context.Background(), "chats:list*")
+	go redisInfra.DelByPattern(context.Background(), "chats:list*")
 
 	go func() {
 		if err := kafkaProducer.ProduceChatDeleted(context.Background(), id); err != nil {
