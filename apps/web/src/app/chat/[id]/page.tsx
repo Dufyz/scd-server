@@ -41,6 +41,7 @@ export default function ChatPage() {
           user_name: event.user_name,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+          language: null,
         };
         appendMessage(msg);
       } else if (event.type === "typing") {
@@ -52,6 +53,8 @@ export default function ChatPage() {
           }
           return prev.filter((u: string) => u !== event.user_name);
         });
+      } else if (event.type === "message_action_update") {
+        appendMessage(event);
       }
     },
     [chatId, appendMessage]

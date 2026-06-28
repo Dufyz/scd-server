@@ -56,6 +56,16 @@ export function useMessages(chatId: number) {
     // Ignora eventos de digitação, queremos apenas as mensagens de texto
     if (wsMsg.type === "typing") return;
 
+    // Atualiza o idioma de uma mensagem existente
+    if (wsMsg.type === "message_action_update") {
+      setMessages((prev: MessageResponse[]) =>
+        prev.map((m) =>
+          m.id === wsMsg.id ? { ...m, language: wsMsg.language } : m
+        )
+      );
+      return;
+    }
+
     setMessages((prev: MessageResponse[]) => {
       // Se a última mensagem oficial da API já está na tela com o mesmo texto, ignora o WebSocket
       const lastMsg = prev[prev.length - 1];

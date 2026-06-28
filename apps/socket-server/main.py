@@ -76,6 +76,18 @@ async def kafka_handler(data: dict):
             "user_name": msg.get("user_name", ""),
         })
 
+    elif event_type == "message" and action == "language_update":
+        msg = payload.get("message", {})
+        room_id = str(msg.get("chat_id", ""))
+        if not room_id:
+            return
+        await broadcast(room_id, {
+            "type": "message_action_update",
+            "room_id": room_id,
+            "id": msg.get("id"),
+            "language": msg.get("language", ""),
+        })
+
     elif event_type == "message" and action == "delete":
         msg = payload.get("message", {})
         room_id = str(msg.get("chat_id", ""))
