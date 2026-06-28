@@ -43,11 +43,11 @@ jobs:
               --name scd-ai-server \
               --restart unless-stopped \
               -p 8070:8070 \
-              -e AI_SERVER_PORT=8070 \
+              -e PORT=8070 \
               -e KAFKA_BROKERS='${{ secrets.KAFKA_BROKERS }}' \
               -e KAFKA_CONSUMER_GROUP_ID=ai-server-language-detection \
               -e KAFKA_TOPIC_CONSUME=message.created \
-              -e KAFKA_TOPIC_PRODUCE=message.language-detected \
+              -e KAFKA_TOPIC_PRODUCE=message.language_detected \
               -e OPENAI_API_KEY='${{ secrets.OPENAI_API_KEY }}' \
               -e OPENAI_MODEL=gpt-4o-mini \
               -e REDIS_URL='${{ secrets.REDIS_URL }}' \

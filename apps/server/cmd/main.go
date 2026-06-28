@@ -102,7 +102,7 @@ func main() {
 	kafkaBrokers := kafkaInfra.BrokersFromEnv()
 	languageReader := kafkaInfra.NewReader(
 		kafkaBrokers,
-		"message.language-detected",
+		"message.language_detected",
 		"server-api-language-consumer",
 	)
 	defer languageReader.Close()

@@ -159,29 +159,33 @@ func (r *MessageRepository) Update(id int64, body dtos.UpdateMessage) (entities.
 	return message, nil
 }
 
-func (r *MessageRepository) UpdateLanguage(id int64, language string) error {
-	result, err := r.connection.Exec(`
+func (r *MessageRepository) UpdateLanguage(id int64, language string) (entities.Message, error) {
+	var message entities.Message
+	err := r.connection.QueryRow(`
 		UPDATE "messages"
 		SET language = $1, updated_at = NOW()
 		WHERE id = $2
-	`, language, id)
+		RETURNING id, chat_id, message, user_name, created_at, updated_at, language
+	`, language, id).Scan(
+		&message.ID,
+		&message.ChatID,
+		&message.Message,
+		&message.UserName,
+		&message.CreatedAt,
+		&message.UpdatedAt,
+		&message.Language,
+	)
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			zap.L().Warn("No message updated with language", zap.Int64("id", id), zap.String("language", language))
+			return entities.Message{}, err
+		}
 		zap.L().Error("Error on UPDATE language Message/Repository/UpdateLanguage", zap.Error(err))
-		return err
+		return entities.Message{}, err
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		zap.L().Error("Error getting rows affected Message/Repository/UpdateLanguage", zap.Error(err))
-		return err
-	}
-
-	if rowsAffected == 0 {
-		zap.L().Warn("No message updated with language", zap.Int64("id", id), zap.String("language", language))
-	}
-
-	return nil
+	return message, nil
 }
 
 func (r *MessageRepository) Delete(id int64) error {

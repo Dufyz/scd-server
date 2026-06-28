@@ -11,12 +11,16 @@ from language_detector import detect_language
 
 logger = logging.getLogger(__name__)
 
+KAFKA_CONSUMER_GROUP_ID = 'ai-server'
+KAFKA_TOPIC_CONSUME = 'message'
+KAFKA_TOPIC_PRODUCE = 'message.language_detected'
+
 
 def create_consumer():
     """Create and configure Kafka consumer"""
     config = {
-        'bootstrap.servers': os.getenv('KAFKA_BROKERS', 'localhost:9092'),
-        'group.id': os.getenv('KAFKA_CONSUMER_GROUP_ID', 'ai-server-language-detection'),
+        'bootstrap.servers': os.getenv('KAFKA_BROKERS', 'localhost:9094'),
+        'group.id': KAFKA_CONSUMER_GROUP_ID,
         'auto.offset.reset': 'earliest',
         'enable.auto.commit': True,
     }
@@ -26,7 +30,7 @@ def create_consumer():
 def create_producer():
     """Create and configure Kafka producer"""
     config = {
-        'bootstrap.servers': os.getenv('KAFKA_BROKERS', 'localhost:9092'),
+        'bootstrap.servers': os.getenv('KAFKA_BROKERS', 'localhost:9094'),
         'acks': 'all',
         'retries': 3,
     }
@@ -41,7 +45,7 @@ def delivery_callback(err, msg):
         logger.info(f"Message delivered to {msg.topic()} [{msg.partition()}] at offset {msg.offset()}")
 
 
-def process_message(consumer, producer, msg):
+def process_message(producer, msg):
     """
     Process a single message from Kafka
 
@@ -97,9 +101,8 @@ def process_message(consumer, producer, msg):
         }
 
         # Publish to output topic
-        topic_produce = os.getenv('KAFKA_TOPIC_PRODUCE', 'message.language-detected')
         producer.produce(
-            topic=topic_produce,
+            topic=KAFKA_TOPIC_PRODUCE,
             key=str(message_id).encode('utf-8'),
             value=json.dumps(result).encode('utf-8'),
             callback=delivery_callback
@@ -124,12 +127,11 @@ def start_consumer(running_flag):
     consumer = create_consumer()
     producer = create_producer()
 
-    topic_consume = os.getenv('KAFKA_TOPIC_CONSUME', 'message.created')
-    consumer.subscribe([topic_consume])
-    logger.info(f"Subscribed to topic: {topic_consume}")
+    consumer.subscribe([KAFKA_TOPIC_CONSUME])
+    logger.info(f"Subscribed to topic: {KAFKA_TOPIC_CONSUME}")
 
     try:
-        while running_flag:
+        while not running_flag.is_set():
             msg = consumer.poll(timeout=1.0)
 
             if msg is None:
@@ -146,7 +148,7 @@ def start_consumer(running_flag):
                 else:
                     raise KafkaException(msg.error())
             else:
-                process_message(consumer, producer, msg)
+                process_message(producer, msg)
 
     except Exception as e:
         logger.error(f"Consumer error: {e}", exc_info=True)

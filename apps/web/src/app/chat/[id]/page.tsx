@@ -35,7 +35,7 @@ export default function ChatPage() {
     (event: WsIncomingEvent) => {
       if (event.type === "send_message") {
         const msg: MessageResponse = {
-          id: Date.now(),
+          id: event.id ?? -Date.now(),
           chat_id: chatId,
           message: event.message,
           user_name: event.user_name,
@@ -70,7 +70,6 @@ export default function ChatPage() {
 
   async function handleSend(text: string) {
     await sendMessage({ chat_id: chatId, message: text, user_name: userName });
-    wsSend(text);
   }
 
   function handleTyping(typing: boolean) {

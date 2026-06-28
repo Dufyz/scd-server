@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{api_url}}/chats?name=SOFTWARE CONCORRENTE E DISTRIBUÍDO - 2026/1 (BES)&category=INF/UFG"
+  url: "{{api_url}}/chats"
   params:
     - name: name
       value: SOFTWARE CONCORRENTE E DISTRIBUÍDO - 2026/1 (BES)

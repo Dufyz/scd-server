@@ -8,8 +8,14 @@ from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
-# Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+_client: OpenAI | None = None
+
+
+def _get_client() -> OpenAI:
+    global _client
+    if _client is None:
+        _client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    return _client
 
 
 def detect_language(text: str) -> str:
@@ -25,7 +31,7 @@ def detect_language(text: str) -> str:
     try:
         model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
-        response = client.chat.completions.create(
+        response = _get_client().chat.completions.create(
             model=model,
             messages=[
                 {

@@ -9,7 +9,7 @@ import sys
 import json
 import signal
 import logging
-from threading import Thread
+from threading import Thread, Event
 from dotenv import load_dotenv
 
 from kafka_consumer import start_consumer
@@ -26,15 +26,12 @@ logger = logging.getLogger(__name__)
 # Load environment variables
 load_dotenv()
 
-# Global flag for graceful shutdown
-running = True
+stop_event = Event()
 
 
 def signal_handler(signum, frame):
-    """Handle shutdown signals"""
-    global running
     logger.info(f"Received signal {signum}, shutting down gracefully...")
-    running = False
+    stop_event.set()
 
 
 def main():
@@ -44,8 +41,6 @@ def main():
     # Validate required environment variables
     required_env_vars = [
         "KAFKA_BROKERS",
-        "KAFKA_TOPIC_CONSUME",
-        "KAFKA_TOPIC_PRODUCE",
         "OPENAI_API_KEY",
     ]
 
@@ -59,14 +54,14 @@ def main():
     signal.signal(signal.SIGTERM, signal_handler)
 
     # Start health check server in background thread
-    port = int(os.getenv("AI_SERVER_PORT", "8070"))
+    port = int(os.getenv("PORT", "8070"))
     health_thread = Thread(target=start_health_server, args=(port,), daemon=True)
     health_thread.start()
     logger.info(f"Health check server started on port {port}")
 
     # Start Kafka consumer (blocking call)
     try:
-        start_consumer(running)
+        start_consumer(stop_event)
     except KeyboardInterrupt:
         logger.info("Interrupted by user")
     except Exception as e:

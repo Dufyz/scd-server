@@ -5,12 +5,12 @@ import websockets
 import sys
 sys.stdout.reconfigure(line_buffering=True)
 from dotenv import load_dotenv
+load_dotenv()
+
 from room_manager import remove_client, broadcast
 from event_handler import handle_event
 from redis_client import get_redis, INSTANCE_ID
 from kafka_client import consume_kafka
-
-load_dotenv()
 
 PORT = int(os.getenv("PORT", 8765))
 
@@ -72,6 +72,7 @@ async def kafka_handler(data: dict):
         await broadcast(room_id, {
             "type": "send_message",
             "room_id": room_id,
+            "id": msg.get("id"),
             "message": msg.get("message", ""),
             "user_name": msg.get("user_name", ""),
         })

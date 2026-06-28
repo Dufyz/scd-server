@@ -25,6 +25,7 @@ export interface UpdateMessagePayload {
 export interface WsMessageEvent {
   type: "send_message";
   room_id: string;
+  id?: number;
   message: string;
   user_name: string;
 }

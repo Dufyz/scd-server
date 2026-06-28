@@ -81,7 +81,8 @@ func handleLanguageDetectedEvent(
 	)
 
 	// Update message language in database
-	if err := messageRepo.UpdateLanguage(event.MessageID, event.DetectedLanguage); err != nil {
+	_, err := messageRepo.UpdateLanguage(event.MessageID, event.DetectedLanguage)
+	if err != nil {
 		zap.L().Error("Error updating message language in database",
 			zap.Error(err),
 			zap.Int64("message_id", event.MessageID),
@@ -105,13 +106,11 @@ func handleLanguageDetectedEvent(
 	}
 
 	// Invalidate cache for this chat's messages
-	cachePattern := "messages:list:chat:*"
-	if err := redisInfra.DelByPattern(ctx, cachePattern); err != nil {
+	if err := redisInfra.DelByPattern(ctx, "messages:list*"); err != nil {
 		zap.L().Warn("Error invalidating cache after language update",
 			zap.Error(err),
 			zap.Int64("chat_id", event.ChatID),
 		)
-		// Don't return error as this is not critical
 	}
 
 	zap.L().Info("Successfully updated message language",

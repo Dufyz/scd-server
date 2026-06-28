@@ -65,5 +65,5 @@ func BrokersFromEnv() []string {
 		}
 		return parts
 	}
-	return []string{"localhost:9092"}
+	return []string{"localhost:9094"}
 }
