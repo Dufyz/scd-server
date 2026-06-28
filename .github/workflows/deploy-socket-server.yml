@@ -29,20 +29,42 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/scd-socket-server:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/scd-socket-server:${{ github.sha }}
 
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          host: ${{ secrets.SOCKET_SERVER_HOST }}
-          username: ec2-user
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/scd-socket-server:latest
-            docker stop scd-socket-server || true
-            docker rm scd-socket-server || true
-            docker run -d \
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to EC2 via SSM
+        run: |
+          PARAMS=$(jq -n \
+            --arg c1 "docker pull ${{ secrets.DOCKERHUB_USERNAME }}/scd-socket-server:latest" \
+            --arg c2 "docker stop scd-socket-server || true" \
+            --arg c3 "docker rm scd-socket-server || true" \
+            --arg c4 "docker run -d \
               --name scd-socket-server \
               --restart unless-stopped \
               -p 8765:8765 \
               -e PORT=8765 \
               -e KAFKA_BROKERS='${{ secrets.KAFKA_BROKERS }}' \
-              ${{ secrets.DOCKERHUB_USERNAME }}/scd-socket-server:latest
+              ${{ secrets.DOCKERHUB_USERNAME }}/scd-socket-server:latest" \
+            '{"commands":[$c1,$c2,$c3,$c4]}')
+
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "${{ secrets.SOCKET_SERVER_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --parameters "$PARAMS" \
+            --query "Command.CommandId" \
+            --output text)
+
+          echo "Command ID: $COMMAND_ID"
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ secrets.SOCKET_SERVER_INSTANCE_ID }}"
+
+          aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ secrets.SOCKET_SERVER_INSTANCE_ID }}" \
+            --query "[StandardOutputContent,StandardErrorContent]" \
+            --output text
