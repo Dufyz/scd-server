@@ -25,8 +25,13 @@ output "kafka_public_ip" {
 }
 
 output "kafka_private_ip" {
-  description = "Use este IP no KAFKA_BROKERS dos outros serviços (mesma VPC)"
+  description = "Use <este-ip>:9094 no KAFKA_BROKERS dos outros serviços (mesma VPC)"
   value       = aws_instance.kafka.private_ip
+}
+
+output "kafka_brokers" {
+  description = "Endereço completo para KAFKA_BROKERS (listener EXTERNAL na porta 9094)"
+  value       = "${aws_instance.kafka.private_ip}:9094"
 }
 
 output "redis_public_ip" {

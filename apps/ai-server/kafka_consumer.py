@@ -11,15 +11,17 @@ from language_detector import detect_language
 
 logger = logging.getLogger(__name__)
 
-KAFKA_CONSUMER_GROUP_ID = 'ai-server'
-KAFKA_TOPIC_CONSUME = 'message'
-KAFKA_TOPIC_PRODUCE = 'message.language_detected'
+KAFKA_CONSUMER_GROUP_ID = os.getenv('KAFKA_CONSUMER_GROUP_ID', 'ai-server')
+KAFKA_TOPIC_CONSUME = os.getenv('KAFKA_TOPIC_CONSUME', 'message')
+KAFKA_TOPIC_PRODUCE = os.getenv('KAFKA_TOPIC_PRODUCE', 'message.language_detected')
 
 
 def create_consumer():
     """Create and configure Kafka consumer"""
+    brokers = os.getenv('KAFKA_BROKERS', 'localhost:9094')
+    logger.info(f"Conectando ao Kafka em: {brokers}")
     config = {
-        'bootstrap.servers': os.getenv('KAFKA_BROKERS', 'localhost:9094'),
+        'bootstrap.servers': brokers,
         'group.id': KAFKA_CONSUMER_GROUP_ID,
         'auto.offset.reset': 'earliest',
         'enable.auto.commit': True,
@@ -128,7 +130,7 @@ def start_consumer(running_flag):
     producer = create_producer()
 
     consumer.subscribe([KAFKA_TOPIC_CONSUME])
-    logger.info(f"Subscribed to topic: {KAFKA_TOPIC_CONSUME}")
+    logger.info(f"Subscribed to topic: {KAFKA_TOPIC_CONSUME} (group: {KAFKA_CONSUMER_GROUP_ID})")
 
     try:
         while not running_flag.is_set():

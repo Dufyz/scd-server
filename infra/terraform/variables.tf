@@ -22,6 +22,12 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
+variable "kafka_instance_type" {
+  description = "Tipo de instância EC2 do Kafka (precisa de pelo menos 2 GB RAM)"
+  type        = string
+  default     = "t3.small"
+}
+
 variable "server_instance_count" {
   description = "Number of server EC2 instances behind the ALB (min 2 for HA)"
   type        = number

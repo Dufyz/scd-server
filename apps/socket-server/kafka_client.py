@@ -3,13 +3,15 @@ import json
 import os
 from confluent_kafka import Consumer, KafkaError
 
-KAFKA_BROKERS = os.getenv("KAFKA_BROKERS", "localhost:9092")
+KAFKA_BROKERS = os.getenv("KAFKA_BROKERS", "localhost:9094")
 
 def _create_consumer() -> Consumer:
+    print(f"Conectando ao Kafka em: {KAFKA_BROKERS}")
     consumer = Consumer({
         "bootstrap.servers": KAFKA_BROKERS,
         "group.id": "socket-server",
         "auto.offset.reset": "latest",
+        "session.timeout.ms": 10000,
     })
     consumer.subscribe(["message", "chat"])
     return consumer
