@@ -15,6 +15,7 @@ import (
 type chatController struct {
 	usecase        usecases.ChatUsecase
 	messageUsecase usecases.MessageUsecase
+	validate       *validator.Validate
 }
 
 func NewChatController(
@@ -24,6 +25,7 @@ func NewChatController(
 	return &chatController{
 		usecase:        usecase,
 		messageUsecase: messageUsecase,
+		validate:       validator.New(),
 	}
 }
 
@@ -87,8 +89,7 @@ func (uc *chatController) POSTChat(ctx echo.Context) error {
 		})
 	}
 
-	err := validator.New().Struct(body)
-	if err != nil {
+	if err := uc.validate.Struct(body); err != nil {
 		return ctx.JSON(http.StatusBadRequest, log.Response{
 			Message: err.Error(),
 		})
@@ -126,8 +127,7 @@ func (uc *chatController) PUTChat(ctx echo.Context) error {
 		})
 	}
 
-	err := validator.New().Struct(body)
-	if err != nil {
+	if err := uc.validate.Struct(body); err != nil {
 		return ctx.JSON(http.StatusBadRequest, log.Response{
 			Message: err.Error(),
 		})

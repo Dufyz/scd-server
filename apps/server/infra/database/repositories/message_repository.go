@@ -54,6 +54,7 @@ func (r *MessageRepository) ListByChatId(chatId int64) ([]entities.Message, erro
 		SELECT id, chat_id, message, user_name, created_at, updated_at, language
 		FROM "messages"
 		WHERE chat_id = $1
+		ORDER BY created_at ASC
 	`, chatId)
 	if err != nil {
 		zap.L().Error("Error on query rows Message/Repository/ListByAgentId", zap.Error(err))
@@ -160,8 +161,15 @@ func (r *MessageRepository) Update(id int64, body dtos.UpdateMessage) (entities.
 }
 
 func (r *MessageRepository) UpdateLanguage(id int64, language string) (entities.Message, error) {
+	tx, err := r.connection.Begin()
+	if err != nil {
+		zap.L().Error("Error starting transaction Message/Repository/UpdateLanguage", zap.Error(err))
+		return entities.Message{}, err
+	}
+	defer tx.Rollback()
+
 	var message entities.Message
-	err := r.connection.QueryRow(`
+	err = tx.QueryRow(`
 		UPDATE "messages"
 		SET language = $1, updated_at = NOW()
 		WHERE id = $2
@@ -182,6 +190,11 @@ func (r *MessageRepository) UpdateLanguage(id int64, language string) (entities.
 			return entities.Message{}, err
 		}
 		zap.L().Error("Error on UPDATE language Message/Repository/UpdateLanguage", zap.Error(err))
+		return entities.Message{}, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		zap.L().Error("Error committing transaction Message/Repository/UpdateLanguage", zap.Error(err))
 		return entities.Message{}, err
 	}
 

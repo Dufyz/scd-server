@@ -4,9 +4,27 @@ import (
 	"context"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/segmentio/kafka-go"
 )
+
+var (
+	writers   = make(map[string]*kafka.Writer)
+	writersMu sync.Mutex
+)
+
+func getWriter(brokers []string, topic string) *kafka.Writer {
+	key := strings.Join(brokers, ",") + "/" + topic
+	writersMu.Lock()
+	defer writersMu.Unlock()
+	if w, ok := writers[key]; ok {
+		return w
+	}
+	w := NewWriter(brokers, topic)
+	writers[key] = w
+	return w
+}
 
 func NewWriter(brokers []string, topic string) *kafka.Writer {
 	return kafka.NewWriter(kafka.WriterConfig{
@@ -27,8 +45,7 @@ func NewReader(brokers []string, topic, groupID string) *kafka.Reader {
 }
 
 func Produce(ctx context.Context, brokers []string, topic string, key, value []byte) error {
-	w := NewWriter(brokers, topic)
-	defer w.Close()
+	w := getWriter(brokers, topic)
 
 	msg := kafka.Message{
 		Key:   key,
@@ -50,7 +67,6 @@ func Consume(ctx context.Context, brokers []string, topic, groupID string, handl
 
 		if handler != nil {
 			if err := handler(m); err != nil {
-				// handler error: continue to next message
 				continue
 			}
 		}

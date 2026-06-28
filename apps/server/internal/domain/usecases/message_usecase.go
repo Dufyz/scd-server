@@ -18,13 +18,21 @@ import (
 
 type MessageUsecase struct {
 	repository interfaces.MessageRepositoryInterface
+	cacheTTL   int
 }
 
 func NewMessageUsecase(
 	repository interfaces.MessageRepositoryInterface,
 ) MessageUsecase {
+	ttl := 60
+	if v := os.Getenv("REDIS_TTL_SECONDS"); v != "" {
+		if parsed, err := strconv.Atoi(v); err == nil {
+			ttl = parsed
+		}
+	}
 	return MessageUsecase{
 		repository: repository,
+		cacheTTL:   ttl,
 	}
 }
 
@@ -44,12 +52,10 @@ func (uc *MessageUsecase) ListByChatId(chatId int64) ([]dtos.MessageResponse, er
 	ctx := context.Background()
 	key := "messages:list:chat:" + strconv.FormatInt(chatId, 10)
 
-	if exists, _ := redisInfra.Exists(ctx, key); exists {
-		if cached, err := redisInfra.Get(ctx, key); err == nil && cached != "" {
-			var cachedResp []dtos.MessageResponse
-			if err := json.Unmarshal([]byte(cached), &cachedResp); err == nil {
-				return cachedResp, nil
-			}
+	if cached, err := redisInfra.Get(ctx, key); err == nil && cached != "" {
+		var cachedResp []dtos.MessageResponse
+		if err := json.Unmarshal([]byte(cached), &cachedResp); err == nil {
+			return cachedResp, nil
 		}
 	}
 
@@ -63,15 +69,8 @@ func (uc *MessageUsecase) ListByChatId(chatId int64) ([]dtos.MessageResponse, er
 		responses = append(responses, uc.buildResponse(message))
 	}
 
-	ttl := 60
-	if v := os.Getenv("REDIS_TTL_SECONDS"); v != "" {
-		if parsed, err := strconv.Atoi(v); err == nil {
-			ttl = parsed
-		}
-	}
-
 	if b, err := json.Marshal(responses); err == nil {
-		_ = redisInfra.Set(ctx, key, string(b), ttl)
+		_ = redisInfra.Set(ctx, key, string(b), uc.cacheTTL)
 	}
 
 	return responses, nil

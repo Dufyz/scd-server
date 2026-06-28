@@ -13,14 +13,16 @@ import (
 )
 
 type messageController struct {
-	usecase usecases.MessageUsecase
+	usecase  usecases.MessageUsecase
+	validate *validator.Validate
 }
 
 func NewMessageController(
 	usecase usecases.MessageUsecase,
 ) *messageController {
 	return &messageController{
-		usecase: usecase,
+		usecase:  usecase,
+		validate: validator.New(),
 	}
 }
 
@@ -33,8 +35,7 @@ func (uc *messageController) POSTMessage(ctx echo.Context) error {
 		})
 	}
 
-	err := validator.New().Struct(body)
-	if err != nil {
+	if err := uc.validate.Struct(body); err != nil {
 		return ctx.JSON(http.StatusBadRequest, log.Response{
 			Message: err.Error(),
 		})
@@ -72,8 +73,7 @@ func (uc *messageController) PUTMessage(ctx echo.Context) error {
 		})
 	}
 
-	err := validator.New().Struct(body)
-	if err != nil {
+	if err := uc.validate.Struct(body); err != nil {
 		return ctx.JSON(http.StatusBadRequest, log.Response{
 			Message: err.Error(),
 		})
