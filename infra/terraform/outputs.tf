@@ -8,6 +8,10 @@ output "alb_dns_name" {
   value       = aws_lb.server.dns_name
 }
 
+output "web_public_ip" {
+  value = aws_instance.web.public_ip
+}
+
 output "ai_server_public_ip" {
   value = aws_instance.ai_server.public_ip
 }

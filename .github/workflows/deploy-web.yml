@@ -9,21 +9,45 @@ on:
   workflow_dispatch: {}
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: apps/web
-          vercel-args: "--prod"
-          # Variáveis de ambiente injetadas no build da Vercel
-          # Configure-as também no painel da Vercel em:
-          # Project Settings → Environment Variables
-          #   NEXT_PUBLIC_API_URL    = http://<SERVER_HOST>:3000/api
-          #   NEXT_PUBLIC_SOCKET_URL = ws://<SOCKET_HOST>:8765
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: apps/web
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/scd-web:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/scd-web:${{ github.sha }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_SOCKET_URL=${{ secrets.NEXT_PUBLIC_SOCKET_URL }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to web instance
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.WEB_HOST }}
+          username: ec2-user
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/scd-web:latest
+            docker stop scd-web || true
+            docker rm scd-web || true
+            docker run -d \
+              --name scd-web \
+              --restart unless-stopped \
+              -p 80:3000 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/scd-web:latest

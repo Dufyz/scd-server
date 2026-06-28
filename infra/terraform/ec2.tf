@@ -65,6 +65,23 @@ resource "aws_instance" "socket_server" {
   }
 }
 
+resource "aws_instance" "web" {
+  ami                    = data.aws_ami.amazon_linux.id
+  instance_type          = var.instance_type
+  key_name               = aws_key_pair.deploy.key_name
+  subnet_id              = data.aws_subnets.default.ids[0]
+  vpc_security_group_ids = [aws_security_group.ssh.id, aws_security_group.web.id]
+  user_data              = local.app_bootstrap
+
+  root_block_device {
+    volume_size = var.root_volume_size_gb
+  }
+
+  tags = {
+    Name = "${var.project_name}-web"
+  }
+}
+
 resource "aws_instance" "kafka" {
   ami                    = data.aws_ami.amazon_linux.id
   instance_type          = var.instance_type
