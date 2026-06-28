@@ -9,4 +9,5 @@ func HealthRoutes(api *echo.Group) {
 	healthController := controllers.NewHealthController()
 
 	api.GET("/health", healthController.GETHealth)
+	api.GET("/health/kafka", healthController.GETKafkaHealth)
 }
