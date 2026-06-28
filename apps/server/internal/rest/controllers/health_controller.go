@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"context"
+	"net"
 	"net/http"
 	"time"
 
@@ -24,20 +24,20 @@ func (c *HealthController) GETHealth(ctx echo.Context) error {
 
 func (c *HealthController) GETKafkaHealth(ctx echo.Context) error {
 	brokers := kafkaInfra.BrokersFromEnv()
-	reqCtx, cancel := context.WithTimeout(ctx.Request().Context(), 5*time.Second)
-	defer cancel()
+	broker := brokers[0]
 
-	err := kafkaInfra.Produce(reqCtx, brokers, "message", []byte("ping"), []byte("ping"))
+	conn, err := net.DialTimeout("tcp", broker, 5*time.Second)
 	if err != nil {
 		return ctx.JSON(http.StatusServiceUnavailable, map[string]string{
 			"status":  "down",
-			"brokers": brokers[0],
+			"brokers": broker,
 			"error":   err.Error(),
 		})
 	}
+	conn.Close()
 
 	return ctx.JSON(http.StatusOK, map[string]string{
 		"status":  "up",
-		"brokers": brokers[0],
+		"brokers": broker,
 	})
 }
