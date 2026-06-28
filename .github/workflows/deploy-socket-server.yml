@@ -45,4 +45,6 @@ jobs:
               -p 8765:8765 \
               -e PORT=8765 \
               -e KAFKA_BROKERS='${{ secrets.KAFKA_BROKERS }}' \
+              -e REDIS_URL='${{ secrets.REDIS_URL }}' \
+              -e REDIS_PASSWORD='${{ secrets.REDIS_PASSWORD }}' \
               ${{ secrets.DOCKERHUB_USERNAME }}/scd-socket-server:latest
