@@ -1,0 +1,41 @@
+name: Deploy kafka
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Kafka to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.KAFKA_HOST }}
+          username: ec2-user
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 5m
+          script: |
+            # Garante que o Docker está rodando
+            sudo systemctl start docker || true
+            sudo systemctl enable docker || true
+
+            # Pega o IP privado da instância
+            IMDS_TOKEN=$(curl -sX PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+            PRIVATE_IP=$(curl -s -H "X-aws-ec2-metadata-token: $IMDS_TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4)
+
+            # Clona o repo se não existir, atualiza se já existir
+            if [ ! -d /opt/scd-server ]; then
+              sudo git clone --depth 1 https://github.com/Dufyz/scd-server.git /opt/scd-server
+            else
+              sudo git -C /opt/scd-server pull
+            fi
+
+            cd /opt/scd-server/infra/kafka
+            sudo cp .env.example .env
+            sudo sed -i "s/^KAFKA_EXTERNAL_HOST=.*/KAFKA_EXTERNAL_HOST=$PRIVATE_IP/" .env
+
+            # Sobe o Kafka
+            sudo docker compose down || true
+            sudo docker compose up -d
+
+            echo "Kafka rodando em $PRIVATE_IP:9094"

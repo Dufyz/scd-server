@@ -1,0 +1,15 @@
+info:
+  name: Kafka health
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{api_url}}/health/kafka"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -89,6 +89,7 @@ resource "aws_instance" "kafka" {
   subnet_id              = data.aws_subnets.default.ids[0]
   vpc_security_group_ids = [aws_security_group.ssh.id, aws_security_group.internal.id, aws_security_group.kafka_ui.id]
   user_data              = local.kafka_bootstrap
+  user_data_replace_on_change = true
 
   root_block_device {
     volume_size = var.root_volume_size_gb
