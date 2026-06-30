@@ -1,6 +1,6 @@
 name: prod
 variables:
   - name: socket_url
-    value: ws://15.228.123.223:8765
+    value: ws://56.125.213.127:8765
   - name: api_url
-    value: http://15.228.123.223:8765
+    value: http://scd-server-alb-188347879.sa-east-1.elb.amazonaws.com/api

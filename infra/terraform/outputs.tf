@@ -1,6 +1,6 @@
 output "server_public_ips" {
-  description = "Public IPs of all server instances (for SSH/deploy)"
-  value       = aws_instance.server[*].public_ip
+  description = "Elastic IPs fixos das instâncias server (SSH/deploy)"
+  value       = aws_eip.server[*].public_ip
 }
 
 output "alb_dns_name" {
@@ -9,19 +9,23 @@ output "alb_dns_name" {
 }
 
 output "web_public_ip" {
-  value = aws_instance.web.public_ip
+  description = "Elastic IP fixo do web"
+  value       = aws_eip.web.public_ip
 }
 
 output "ai_server_public_ip" {
-  value = aws_instance.ai_server.public_ip
+  description = "Elastic IP fixo do ai-server"
+  value       = aws_eip.ai_server.public_ip
 }
 
 output "socket_server_public_ip" {
-  value = aws_instance.socket_server.public_ip
+  description = "Elastic IP fixo do socket-server"
+  value       = aws_eip.socket_server.public_ip
 }
 
 output "kafka_public_ip" {
-  value = aws_instance.kafka.public_ip
+  description = "IP público do Kafka (efêmero — sem EIP por limite da conta; use KAFKA_HOST para SSH)"
+  value       = aws_instance.kafka.public_ip
 }
 
 output "kafka_private_ip" {
@@ -35,7 +39,8 @@ output "kafka_brokers" {
 }
 
 output "redis_public_ip" {
-  value = aws_instance.redis.public_ip
+  description = "IP público do Redis (efêmero — sem EIP por limite da conta; use IP privado nos serviços)"
+  value       = aws_instance.redis.public_ip
 }
 
 output "redis_private_ip" {

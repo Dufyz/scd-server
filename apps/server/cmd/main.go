@@ -128,7 +128,7 @@ func main() {
 	}))
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"https://*.vercel.app", "http://localhost:*", "http://56.124.83.92", "http://56.124.83.92:*"},
+		AllowOrigins:     []string{"*", "http://localhost:*", "http://56.125.112.204", "http://56.125.112.204:*"},
 		AllowMethods:     []string{echo.GET, echo.HEAD, echo.PUT, echo.PATCH, echo.POST, echo.DELETE, echo.OPTIONS},
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 		ExposeHeaders:    []string{echo.HeaderAuthorization},

@@ -9,17 +9,16 @@ resource "terraform_data" "sync_kafka_clients" {
       "${path.module}/scripts/sync-kafka-clients.sh",
       local_sensitive_file.ssh_key.filename,
       "${aws_instance.kafka.private_ip}:9094",
-      aws_instance.ai_server.public_ip,
-      aws_instance.socket_server.public_ip,
-      join(",", aws_instance.server[*].public_ip),
+      aws_eip.ai_server.public_ip,
+      aws_eip.socket_server.public_ip,
+      join(",", aws_eip.server[*].public_ip),
     ])
   }
 
   depends_on = [
-    aws_instance.kafka,
-    aws_instance.ai_server,
-    aws_instance.socket_server,
-    aws_instance.server,
+    aws_eip_association.ai_server,
+    aws_eip_association.socket_server,
+    aws_eip_association.server,
   ]
 }
 
