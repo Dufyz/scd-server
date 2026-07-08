@@ -71,10 +71,14 @@ async def kafka_handler(data: dict):
             return
         await broadcast(room_id, {
             "type": "send_message",
+            "id": msg.get("id"),
             "room_id": room_id,
             "id": msg.get("id"),
             "message": msg.get("message", ""),
             "user_name": msg.get("user_name", ""),
+            "created_at": msg.get("created_at"),
+            "updated_at": msg.get("updated_at"),
+            "language": msg.get("language"),
         })
 
     elif event_type == "message" and action == "language_update":
@@ -83,9 +87,9 @@ async def kafka_handler(data: dict):
         if not room_id:
             return
         await broadcast(room_id, {
-            "type": "message_action_update",
-            "room_id": room_id,
+            "type": "message_language_update",
             "id": msg.get("id"),
+            "room_id": room_id,
             "language": msg.get("language", ""),
         })
 
@@ -107,9 +111,12 @@ async def kafka_handler(data: dict):
             return
         await broadcast(room_id, {
             "type": "chat_updated",
+            "id": chat.get("id"),
             "room_id": room_id,
             "name": chat.get("name", ""),
             "category": chat.get("category", ""),
+            "created_at": chat.get("created_at"),
+            "updated_at": chat.get("updated_at"),
         })
 
     elif event_type == "chat" and action == "delete":
